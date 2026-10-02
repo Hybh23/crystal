@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>كرستال | المنتجات</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Tahoma, Arial, sans-serif; background: #f8f7fb; color: #222; }
+  header { background: #2b1f4d; color: white; padding: 16px; text-align: center; font-size: 20px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    padding: 12px;
+  }
+  .card {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+  .card img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    background: #eee;
+  }
+  .card-body { padding: 10px; }
+  .card-body h3 { font-size: 15px; margin-bottom: 4px; }
+  .price { color: #2b1f4d; font-weight: bold; font-size: 14px; }
+  .unit { color: #888; font-size: 12px; }
+  .colors { margin-top: 6px; font-size: 12px; color: #555; }
+  .loading, .empty { text-align: center; padding: 40px; color: #888; }
+</style>
+</head>
+<body>
+
+<header>كرستال | المنتجات</header>
+<div id="productsGrid" class="grid">
+  <div class="loading">جاري تحميل المنتجات...</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = https://ptahgriuztxqsegkueln.supabase.co
+  const SUPABASE_ANON_KEY = sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw;
+
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function loadProducts() {
+    const grid = document.getElementById("productsGrid");
+
+    const { data: products, error } = await supabase
+      .from("products")
+      .select(`
+        id, name, price, sale_unit,
+        product_images ( image_url, sort_order ),
+        product_colors ( color_name, active )
+      `)
+      .eq("active", true)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      grid.innerHTML = `<div class="empty">صار خطأ: ${error.message}</div>`;
+      console.error(error);
+      return;
+    }
+
+    if (!products || products.length === 0) {
+      grid.innerHTML = `<div class="empty">لا توجد منتجات حاليًا</div>`;
+      return;
+    }
+
+    grid.innerHTML = products.map(p => {
+      const images = (p.product_images || []).sort((a,b) => a.sort_order - b.sort_order);
+      const img = images[0]?.image_url || "https://via.placeholder.com/300x300?text=No+Image";
+      const unitLabel = p.sale_unit === "dozen" ? "دستة" : "قطعة";
+      const colors = (p.product_colors || []).filter(c => c.active).map(c => c.color_name).join("، ");
+
+      return `
+        <div class="card">
+          <img src="${img}" alt="${p.name}">
+          <div class="card-body">
+            <h3>${p.name}</h3>
+            <div class="price">${p.price} د.ل <span class="unit">/ ${unitLabel}</span></div>
+            ${colors ? `<div class="colors">الألوان: ${colors}</div>` : ""}
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  loadProducts();
+</script>
+
+</body>
+</html>
