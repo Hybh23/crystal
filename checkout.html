@@ -130,7 +130,7 @@ textarea { resize: vertical; min-height: 50px; }
         <input type="text" id="shopName">
         <label>المدينة *</label>
         <select id="city" onchange="updateTotal()">
-          <option value="">اختاري المدينة</option>
+          <option value="">اختار المدينة</option>
           ${cityOptions}
         </select>
         <label>المنطقة *</label>
@@ -155,7 +155,7 @@ textarea { resize: vertical; min-height: 50px; }
           <div><b>المصرف:</b> ${BANK_NAME}</div>
           <div><b>اسم الحساب:</b> ${BANK_ACCOUNT_HOLDER}</div>
           <div><b>رقم الحساب:</b> ${BANK_ACCOUNT_NUMBER}</div>
-          <div style="margin-top:8px;">بعد التحويل، أرسلي صورة الإيصال مع رقم طلبك عبر واتساب لتأكيد الدفع.</div>
+          <div style="margin-top:8px;">بعد التحويل، أرسل صورة الإيصال مع رقم طلبك عبر واتساب لتأكيد الدفع.</div>
         </div>
       </div>
 
@@ -196,7 +196,7 @@ textarea { resize: vertical; min-height: 50px; }
     const btn = document.getElementById("submitBtn");
 
     if (!name || !phone || !cityId || !area) {
-      errMsg.textContent = "املي الاسم والهاتف والمدينة والمنطقة";
+      errMsg.textContent = "املئ الاسم والهاتف والمدينة والمنطقة";
       return;
     }
 
