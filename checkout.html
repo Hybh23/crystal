@@ -190,8 +190,7 @@ const BANK_ACCOUNT_NUMBER = "2009392184 / IBAN: LY44006009000002009392184";
 
     const result = data[0];
     localStorage.removeItem(CART_KEY);
-    window.location.href = `order-confirmation.html?order=${encodeURIComponent(result.order_number)}&total=${result.grand_total}&method=${paymentMethod}`;
-  }
+window.location.href = `order-confirmation.html?order=${encodeURIComponent(result.result_order_number)}&total=${result.result_grand_total}&method=${paymentMethod}`;  }
 
   init();
 </script>
