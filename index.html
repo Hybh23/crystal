@@ -95,7 +95,7 @@
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   const CART_KEY = "crystal_cart";
-
+    <a href="cart.html" class="cart-badge" id="cartBadge" style="text-decoration:none;">السلة (0)</a>
   function getCart() {
     try {
       return JSON.parse(localStorage.getItem(CART_KEY)) || [];
