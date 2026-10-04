@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>السلة | كرستال</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Tahoma, Arial, sans-serif; background: #f8f7fb; color: #222; }
+  header {
+    background: #2b1f4d;
+    color: white;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  header a { color: white; text-decoration: none; font-size: 14px; }
+  .container { padding: 12px; max-width: 500px; margin: 0 auto; }
+  .item {
+    background: white;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  .item img { width: 70px; height: 70px; border-radius: 8px; object-fit: cover; background: #eee; }
+  .item-info { flex: 1; }
+  .item-info h3 { font-size: 15px; margin-bottom: 4px; }
+  .item-info .meta { font-size: 12px; color: #777; margin-bottom: 6px; }
+  .qty-row { display: flex; align-items: center; gap: 8px; }
+  .qty-row input { width: 55px; padding: 5px; border: 1px solid #ddd; border-radius: 6px; text-align: center; }
+  .line-total { font-weight: bold; color: #2b1f4d; font-size: 14px; }
+  .remove-btn { background: none; border: none; color: #c0392b; font-size: 12px; cursor: pointer; margin-top: 4px; }
+  .summary {
+    background: white;
+    border-radius: 10px;
+    padding: 16px;
+    margin-top: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+  .summary-row.total { font-weight: bold; font-size: 17px; color: #2b1f4d; border-top: 1px solid #eee; padding-top: 8px; }
+  .min-warning {
+    background: #fff3cd;
+    color: #856404;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-top: 10px;
+    text-align: center;
+  }
+  .checkout-btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    margin-top: 14px;
+    background: #2b1f4d;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .checkout-btn.disabled { background: #ccc; pointer-events: none; }
+  .empty { text-align: center; padding: 60px 20px; color: #888; }
+  .empty a { color: #2b1f4d; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<header>
+  <span>السلة</span>
+  <a href="index.html">← رجوع للمنتجات</a>
+</header>
+
+<div class="container" id="container">
+  <!-- يتعبى بالجافاسكربت -->
+</div>
+
+<script>
+  const CART_KEY = "crystal_cart";
+  const MIN_ORDER = 300;
+
+  function getCart() {
+    try {
+      return JSON.parse(localStorage.getItem(CART_KEY)) || [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveCart(cart) {
+    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    render();
+  }
+
+  function removeItem(indexToRemove) {
+    let cart = getCart();
+    cart.splice(indexToRemove, 1);
+    saveCart(cart);
+  }
+
+  function updateQty(index, value) {
+    const qty = parseInt(value);
+    let cart = getCart();
+    if (qty && qty > 0) {
+      cart[index].quantity = qty;
+    }
+    saveCart(cart);
+  }
+
+  function render() {
+    const cart = getCart();
+    const container = document.getElementById("container");
+
+    if (cart.length === 0) {
+      container.innerHTML = `
+        <div class="empty">
+          السلة فاضية حاليًا.<br><br>
+          <a href="index.html">تصفحي المنتجات</a>
+        </div>
+      `;
+      return;
+    }
+
+    let subtotal = 0;
+
+    const itemsHtml = cart.map((item, index) => {
+      const lineTotal = item.price * item.quantity;
+      subtotal += lineTotal;
+      const unitLabel = item.sale_unit === "dozen" ? "دستة" : "قطعة";
+
+      return `
+        <div class="item">
+          <img src="${item.image}" alt="${item.name}">
+          <div class="item-info">
+            <h3>${item.name}</h3>
+            <div class="meta">${item.color ? "اللون: " + item.color + " — " : ""}${item.price} د.ل / ${unitLabel}</div>
+            <div class="qty-row">
+              <span>الكمية:</span>
+              <input type="number" min="1" value="${item.quantity}" onchange="updateQty(${index}, this.value)">
+              <span class="line-total">${lineTotal.toFixed(2)} د.ل</span>
+            </div>
+            <button class="remove-btn" onclick="removeItem(${index})">حذف</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    const belowMin = subtotal < MIN_ORDER;
+    const remaining = (MIN_ORDER - subtotal).toFixed(2);
+
+    container.innerHTML = itemsHtml + `
+      <div class="summary">
+        <div class="summary-row total">
+          <span>إجمالي المنتجات</span>
+          <span>${subtotal.toFixed(2)} د.ل</span>
+        </div>
+        ${belowMin ? `<div class="min-warning">أضيفي ${remaining} د.ل أخرى من المنتجات لإكمال الحد الأدنى للطلب (300 د.ل).</div>` : ""}
+        <a href="checkout.html" class="checkout-btn ${belowMin ? 'disabled' : ''}">
+          ${belowMin ? "أكملي الحد الأدنى أول" : "متابعة الطلب"}
+        </a>
+      </div>
+    `;
+  }
+
+  render();
+</script>
+
+</body>
+</html>
