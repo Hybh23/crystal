@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إتمام الطلب | كرستال</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Tahoma, Arial, sans-serif; background: #f8f7fb; color: #222; }
+  header { background: #2b1f4d; color: white; padding: 16px; text-align: center; }
+  .container { padding: 14px; max-width: 480px; margin: 0 auto; }
+  .box { background: white; border-radius: 10px; padding: 16px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  label { display: block; font-size: 13px; color: #555; margin: 10px 0 4px; }
+  input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+  textarea { resize: vertical; min-height: 50px; }
+  .pay-option { display: flex; align-items: center; gap: 8px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-top: 8px; cursor: pointer; }
+  .pay-option input { width: auto; }
+  .bank-details { background: #f1f0fa; border-radius: 8px; padding: 12px; margin-top: 10px; font-size: 13px; display: none; }
+  .bank-details div { margin-bottom: 4px; }
+  .summary-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px; }
+  .summary-row.total { font-weight: bold; font-size: 16px; border-top: 1px solid #eee; padding-top: 8px; }
+  .submit-btn { width: 100%; padding: 14px; background: #2b1f4d; color: white; border: none; border-radius: 8px; font-size: 15px; margin-top: 10px; cursor: pointer; }
+  .submit-btn:disabled { opacity: 0.6; }
+  .err { color: #c0392b; font-size: 13px; text-align: center; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<header>إتمام الطلب</header>
+
+<div class="container" id="container">جاري التحميل...</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://ptahgriuztxqsegkueln.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const CART_KEY = "crystal_cart";
+
+  // ضعي هنا بيانات حمودة البنكية الحقيقية
+  const BANK_NAME = "اسم المصرف";
+  const BANK_ACCOUNT_HOLDER = "اسم صاحب الحساب";
+  const BANK_ACCOUNT_NUMBER = "رقم الحساب / IBAN";
+
+  function getCart() {
+    try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
+    catch { return []; }
+  }
+
+  let cities = [];
+  let subtotal = 0;
+
+  async function init() {
+    const cart = getCart();
+    subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+    if (cart.length === 0 || subtotal < 300) {
+      window.location.href = "cart.html";
+      return;
+    }
+
+    const { data, error } = await supabaseClient
+      .from("cities")
+      .select("id, name, shipping_price")
+      .eq("active", true)
+      .order("name");
+
+    cities = data || [];
+    render();
+  }
+
+  function render() {
+    const cityOptions = cities.map(c => `<option value="${c.id}" data-price="${c.shipping_price}">${c.name} (توصيل ${c.shipping_price} د.ل)</option>`).join("");
+
+    document.getElementById("container").innerHTML = `
+      <div class="box">
+        <label>الاسم الكامل *</label>
+        <input type="text" id="name">
+        <label>رقم الهاتف *</label>
+        <input type="tel" id="phone">
+        <label>رقم هاتف ثانٍ (اختياري)</label>
+        <input type="tel" id="secondPhone">
+        <label>اسم المحل (اختياري)</label>
+        <input type="text" id="shopName">
+        <label>المدينة *</label>
+        <select id="city" onchange="updateTotal()">
+          <option value="">اختاري المدينة</option>
+          ${cityOptions}
+        </select>
+        <label>المنطقة *</label>
+        <input type="text" id="area">
+        <label>تفاصيل العنوان (اختياري)</label>
+        <input type="text" id="addressDetails">
+        <label>ملاحظات (اختياري)</label>
+        <textarea id="notes"></textarea>
+      </div>
+
+      <div class="box">
+        <label style="margin-top:0;">طريقة الدفع *</label>
+        <label class="pay-option">
+          <input type="radio" name="payMethod" value="cod" checked onchange="togglePayment()">
+          الدفع عند الاستلام
+        </label>
+        <label class="pay-option">
+          <input type="radio" name="payMethod" value="bank_transfer" onchange="togglePayment()">
+          تحويل مصرفي
+        </label>
+        <div class="bank-details" id="bankDetails">
+          <div><b>المصرف:</b> ${BANK_NAME}</div>
+          <div><b>اسم الحساب:</b> ${BANK_ACCOUNT_HOLDER}</div>
+          <div><b>رقم الحساب:</b> ${BANK_ACCOUNT_NUMBER}</div>
+          <div style="margin-top:8px;">بعد التحويل، أرسلي صورة الإيصال مع رقم طلبك عبر واتساب لتأكيد الدفع.</div>
+        </div>
+      </div>
+
+      <div class="box">
+        <div class="summary-row"><span>إجمالي المنتجات</span><span>${subtotal.toFixed(2)} د.ل</span></div>
+        <div class="summary-row"><span>التوصيل</span><span id="shippingDisplay">—</span></div>
+        <div class="summary-row total"><span>الإجمالي</span><span id="grandTotalDisplay">—</span></div>
+        <button class="submit-btn" id="submitBtn" onclick="submitOrder()">تأكيد الطلب</button>
+        <div class="err" id="errMsg"></div>
+      </div>
+    `;
+  }
+
+  function togglePayment() {
+    const method = document.querySelector('input[name="payMethod"]:checked').value;
+    document.getElementById("bankDetails").style.display = method === "bank_transfer" ? "block" : "none";
+  }
+
+  function updateTotal() {
+    const citySelect = document.getElementById("city");
+    const selected = citySelect.options[citySelect.selectedIndex];
+    const shipping = selected && selected.dataset.price ? parseFloat(selected.dataset.price) : 0;
+    document.getElementById("shippingDisplay").textContent = selected.value ? shipping.toFixed(2) + " د.ل" : "—";
+    document.getElementById("grandTotalDisplay").textContent = selected.value ? (subtotal + shipping).toFixed(2) + " د.ل" : "—";
+  }
+
+  async function submitOrder() {
+    const name = document.getElementById("name").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const secondPhone = document.getElementById("secondPhone").value.trim();
+    const shopName = document.getElementById("shopName").value.trim();
+    const cityId = document.getElementById("city").value;
+    const area = document.getElementById("area").value.trim();
+    const addressDetails = document.getElementById("addressDetails").value.trim();
+    const notes = document.getElementById("notes").value.trim();
+    const paymentMethod = document.querySelector('input[name="payMethod"]:checked').value;
+    const errMsg = document.getElementById("errMsg");
+    const btn = document.getElementById("submitBtn");
+
+    if (!name || !phone || !cityId || !area) {
+      errMsg.textContent = "املي الاسم والهاتف والمدينة والمنطقة";
+      return;
+    }
+
+    const cart = getCart();
+    const items = cart.map(item => ({
+      product_id: item.product_id,
+      product_name: item.name,
+      color_name: item.color,
+      sale_unit: item.sale_unit,
+      quantity: item.quantity,
+      unit_price: item.price
+    }));
+
+    btn.disabled = true;
+    btn.textContent = "جاري إرسال الطلب...";
+    errMsg.textContent = "";
+
+    const { data, error } = await supabaseClient.rpc("create_guest_order", {
+      p_customer_name: name,
+      p_customer_phone: phone,
+      p_customer_second_phone: secondPhone || null,
+      p_shop_name: shopName || null,
+      p_city_id: cityId,
+      p_area: area,
+      p_address_details: addressDetails || null,
+      p_notes: notes || null,
+      p_payment_method: paymentMethod,
+      p_items: items
+    });
+
+    if (error) {
+      errMsg.textContent = "خطأ: " + error.message;
+      btn.disabled = false;
+      btn.textContent = "تأكيد الطلب";
+      return;
+    }
+
+    const result = data[0];
+    localStorage.removeItem(CART_KEY);
+    window.location.href = `order-confirmation.html?order=${encodeURIComponent(result.order_number)}&total=${result.grand_total}&method=${paymentMethod}`;
+  }
+
+  init();
+</script>
+
+</body>
+</html>
