@@ -7,10 +7,26 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: Tahoma, Arial, sans-serif; background: #f8f7fb; color: #222; }
-  header { background: #2b1f4d; color: white; padding: 16px; text-align: center; font-size: 20px; }
+  header {
+    background: #2b1f4d;
+    color: white;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  header .title { font-size: 20px; }
+  header .cart-badge {
+    background: white;
+    color: #2b1f4d;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+  }
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 12px;
     padding: 12px;
   }
@@ -19,6 +35,8 @@
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
   }
   .card img {
     width: 100%;
@@ -26,27 +44,100 @@
     object-fit: cover;
     background: #eee;
   }
-  .card-body { padding: 10px; }
+  .card-body { padding: 10px; flex: 1; display: flex; flex-direction: column; }
   .card-body h3 { font-size: 15px; margin-bottom: 4px; }
   .price { color: #2b1f4d; font-weight: bold; font-size: 14px; }
   .unit { color: #888; font-size: 12px; }
-  .colors { margin-top: 6px; font-size: 12px; color: #555; }
+  .field { margin-top: 8px; }
+  .field label { font-size: 12px; color: #666; display: block; margin-bottom: 3px; }
+  .field select, .field input {
+    width: 100%;
+    padding: 6px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  .add-btn {
+    margin-top: 10px;
+    padding: 8px;
+    background: #2b1f4d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .add-btn:active { opacity: 0.8; }
+  .added-msg {
+    font-size: 12px;
+    color: #1a7a3c;
+    text-align: center;
+    margin-top: 6px;
+    display: none;
+  }
   .loading, .empty { text-align: center; padding: 40px; color: #888; }
 </style>
 </head>
 <body>
 
-<header>كرستال | المنتجات</header>
+<header>
+  <span class="title">كرستال | المنتجات</span>
+  <span class="cart-badge" id="cartBadge">السلة (0)</span>
+</header>
+
 <div id="productsGrid" class="grid">
   <div class="loading">جاري تحميل المنتجات...</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
- const SUPABASE_URL = "https://ptahgriuztxqsegkueln.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
-
+  const SUPABASE_URL = "https://ptahgriuztxqsegkueln.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const CART_KEY = "crystal_cart";
+
+  function getCart() {
+    try {
+      return JSON.parse(localStorage.getItem(CART_KEY)) || [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveCart(cart) {
+    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    updateCartBadge();
+  }
+
+  function updateCartBadge() {
+    const cart = getCart();
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    document.getElementById("cartBadge").textContent = `السلة (${totalItems})`;
+  }
+
+  function addToCart(product, colorName, quantity) {
+    const cart = getCart();
+
+    // لو نفس المنتج بنفس اللون موجود، نزيد الكمية بدل ما نكرر السطر
+    const existing = cart.find(item => item.product_id === product.id && item.color === (colorName || null));
+
+    if (existing) {
+      existing.quantity += quantity;
+    } else {
+      cart.push({
+        product_id: product.id,
+        name: product.name,
+        price: product.price,
+        sale_unit: product.sale_unit,
+        color: colorName || null,
+        quantity: quantity,
+        image: product.image
+      });
+    }
+
+    saveCart(cart);
+  }
 
   async function loadProducts() {
     const grid = document.getElementById("productsGrid");
@@ -72,11 +163,16 @@ const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
       return;
     }
 
-    grid.innerHTML = products.map(p => {
+    grid.innerHTML = products.map((p, index) => {
       const images = (p.product_images || []).sort((a,b) => a.sort_order - b.sort_order);
       const img = images[0]?.image_url || "https://via.placeholder.com/300x300?text=No+Image";
       const unitLabel = p.sale_unit === "dozen" ? "دستة" : "قطعة";
-      const colors = (p.product_colors || []).filter(c => c.active).map(c => c.color_name).join("، ");
+      const activeColors = (p.product_colors || []).filter(c => c.active);
+      const hasColors = activeColors.length > 0;
+
+      const colorOptions = hasColors
+        ? `<option value="">اختاري لون</option>` + activeColors.map(c => `<option value="${c.color_name}">${c.color_name}</option>`).join("")
+        : "";
 
       return `
         <div class="card">
@@ -84,13 +180,55 @@ const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
           <div class="card-body">
             <h3>${p.name}</h3>
             <div class="price">${p.price} د.ل <span class="unit">/ ${unitLabel}</span></div>
-            ${colors ? `<div class="colors">الألوان: ${colors}</div>` : ""}
+
+            ${hasColors ? `
+            <div class="field">
+              <label>اللون</label>
+              <select id="color-${index}">${colorOptions}</select>
+            </div>` : ""}
+
+            <div class="field">
+              <label>الكمية (بال${unitLabel})</label>
+              <input type="number" id="qty-${index}" value="1" min="1">
+            </div>
+
+            <button class="add-btn" onclick='handleAdd(${index}, ${JSON.stringify({id: p.id, name: p.name, price: p.price, sale_unit: p.sale_unit, image: img, hasColors: hasColors})})'>
+              أضف للسلة
+            </button>
+            <div class="added-msg" id="msg-${index}">تمت الإضافة ✓</div>
           </div>
         </div>
       `;
     }).join("");
   }
 
+  function handleAdd(index, product) {
+    const qtyInput = document.getElementById(`qty-${index}`);
+    const quantity = parseInt(qtyInput.value);
+
+    if (!quantity || quantity < 1) {
+      alert("حددي كمية صحيحة");
+      return;
+    }
+
+    let colorName = null;
+    if (product.hasColors) {
+      const colorSelect = document.getElementById(`color-${index}`);
+      colorName = colorSelect.value;
+      if (!colorName) {
+        alert("لازم تختاري لون أول");
+        return;
+      }
+    }
+
+    addToCart(product, colorName, quantity);
+
+    const msg = document.getElementById(`msg-${index}`);
+    msg.style.display = "block";
+    setTimeout(() => { msg.style.display = "none"; }, 1500);
+  }
+
+  updateCartBadge();
   loadProducts();
 </script>
 
