@@ -186,7 +186,7 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
       const hasColors = activeColors.length > 0;
 
       const colorOptions = hasColors
-        ? `<option value="">اختاري لون</option>` + activeColors.map(c => `<option value="${c.color_name}">${c.color_name}</option>`).join("")
+        ? `<option value="">اختار لون</option>` + activeColors.map(c => `<option value="${c.color_name}">${c.color_name}</option>`).join("")
         : "";
 
       return `
@@ -222,7 +222,7 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
     const quantity = parseInt(qtyInput.value);
 
     if (!quantity || quantity < 1) {
-      alert("حددي كمية صحيحة");
+      alert("حدد كمية صحيحة");
       return;
     }
 
@@ -231,7 +231,7 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
       const colorSelect = document.getElementById(`color-${index}`);
       colorName = colorSelect.value;
       if (!colorName) {
-        alert("لازم تختاري لون أول");
+        alert("لازم تختار لون قبل");
         return;
       }
     }
