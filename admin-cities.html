@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>المدن والتوصيل | كرستال</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF9F4;--surface:#ffffff;--text:#241F17;--muted:#79705F;--border:#E7E0D0;
+  --primary:#A9822A;--n100:#F7F3E9;--error:#DC2626;
+  --r-md:8px;--r-lg:12px;--sh-sm:0 1px 2px rgba(16,24,40,.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color: var(--text); }
+.site-header {
+  background: var(--primary); color: #fff; padding: 16px 20px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.site-header .wordmark { font-family: 'Inter'; font-weight: 800; letter-spacing: 1.5px; font-size: 1.1rem; }
+.back-link { color: #fff; text-decoration: none; font-size: 0.82rem; opacity: 0.9; }
+.container { padding: 16px; max-width: 480px; margin: 0 auto; }
+.box {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+  padding: 16px; margin-bottom: 14px; box-shadow: var(--sh-sm);
+}
+.box-title { font-size: 0.85rem; color: var(--muted); margin-bottom: 10px; }
+label { display: block; font-size: 0.78rem; color: var(--muted); margin: 10px 0 5px; }
+input {
+  width: 100%; padding: 9px; border: 1.5px solid var(--border);
+  border-radius: var(--r-md); font-size: 0.85rem; font-family: 'Tajawal';
+}
+.add-btn {
+  width: 100%; padding: 11px; margin-top: 14px; background: var(--primary);
+  color: #fff; border: none; border-radius: var(--r-md); font-weight: 700;
+  font-family: 'Tajawal'; font-size: 0.88rem; cursor: pointer;
+}
+.city-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.city-row:last-child { border-bottom: none; }
+.city-name { font-weight: 700; font-size: 0.9rem; }
+.city-controls { display: flex; align-items: center; gap: 8px; }
+.city-controls input { width: 70px; padding: 6px; font-family: 'Inter'; }
+.city-controls button {
+  padding: 6px 10px; border: 1.5px solid var(--border); border-radius: var(--r-md);
+  background: var(--surface); font-size: 0.75rem; font-family: 'Tajawal'; cursor: pointer;
+}
+.city-controls button.save { background: var(--primary); color: #fff; border: none; }
+.city-controls .status { font-size: 0.72rem; font-weight: 700; }
+.status.on { color: #2E7D32; }
+.status.off { color: var(--error); }
+.loading, .empty { text-align: center; padding: 30px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <span class="wordmark">CRYSTAL</span>
+  <a href="admin.html" class="back-link">← رجوع للإدارة</a>
+</header>
+
+<div class="container">
+  <div class="box">
+    <div class="box-title">إضافة مدينة جديدة</div>
+    <label>اسم المدينة</label>
+    <input type="text" id="newCityName">
+    <label>سعر التوصيل (د.ل)</label>
+    <input type="number" id="newCityPrice">
+    <button class="add-btn" onclick="addCity()">إضافة المدينة</button>
+  </div>
+
+  <div class="box">
+    <div class="box-title">المدن الحالية</div>
+    <div id="citiesList" class="loading">جاري التحميل...</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://ptahgriuztxqsegkueln.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function checkAuth() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) { window.location.href = "admin-login.html"; return false; }
+    return true;
+  }
+
+  async function loadCities() {
+    const ok = await checkAuth();
+    if (!ok) return;
+
+    const list = document.getElementById("citiesList");
+    const { data: cities, error } = await supabaseClient.from("cities").select("*").order("name");
+
+    if (error) { list.innerHTML = `<div class="empty">خطأ: ${error.message}</div>`; return; }
+    if (!cities || cities.length === 0) { list.innerHTML = `<div class="empty">لا توجد مدن بعد</div>`; return; }
+
+    list.innerHTML = cities.map(c => `
+      <div class="city-row">
+        <div>
+          <div class="city-name">${c.name}</div>
+          <span class="status ${c.active ? 'on' : 'off'}">${c.active ? 'مفعّلة' : 'معطّلة'}</span>
+        </div>
+        <div class="city-controls">
+          <input type="number" id="city-price-${c.id}" value="${c.shipping_price}">
+          <button class="save" onclick="saveCityPrice('${c.id}')">حفظ</button>
+          <button onclick="toggleCity('${c.id}', ${c.active})">${c.active ? 'تعطيل' : 'تفعيل'}</button>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  async function addCity() {
+    const name = document.getElementById("newCityName").value.trim();
+    const price = parseFloat(document.getElementById("newCityPrice").value);
+
+    if (!name || !price || price < 0) { alert("أدخل اسم المدينة وسعر توصيل صحيح"); return; }
+
+    const { error } = await supabaseClient.from("cities").insert({ name, shipping_price: price, active: true });
+    if (error) { alert("خطأ: " + error.message); return; }
+
+    document.getElementById("newCityName").value = "";
+    document.getElementById("newCityPrice").value = "";
+    loadCities();
+  }
+
+  async function saveCityPrice(id) {
+    const newPrice = parseFloat(document.getElementById(`city-price-${id}`).value);
+    if (!newPrice || newPrice < 0) { alert("سعر غير صحيح"); return; }
+
+    const { error } = await supabaseClient.from("cities").update({ shipping_price: newPrice }).eq("id", id);
+    if (error) { alert("خطأ: " + error.message); return; }
+    alert("تم الحفظ");
+  }
+
+  async function toggleCity(id, currentActive) {
+    const { error } = await supabaseClient.from("cities").update({ active: !currentActive }).eq("id", id);
+    if (error) { alert("خطأ: " + error.message); return; }
+    loadCities();
+  }
+
+  loadCities();
+</script>
+
+</body>
+</html>
