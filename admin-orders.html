@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الطلبات | كرستال</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF9F4;--surface:#ffffff;--text:#241F17;--muted:#79705F;--border:#E7E0D0;
+  --primary:#A9822A;--n100:#F7F3E9;--success:#2E7D32;--warning:#0E7C86;--error:#DC2626;
+  --r-md:8px;--r-lg:12px;--sh-sm:0 1px 2px rgba(16,24,40,.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color: var(--text); }
+.en { font-family: 'Inter', sans-serif; direction: ltr; unicode-bidi: isolate; }
+.site-header {
+  background: var(--primary); color: #fff; padding: 16px 20px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.site-header .wordmark { font-family: 'Inter'; font-weight: 800; letter-spacing: 1.5px; font-size: 1.1rem; }
+.back-link { color: #fff; text-decoration: none; font-size: 0.82rem; opacity: 0.9; }
+
+.tabs {
+  display: flex; gap: 6px; padding: 12px 14px; overflow-x: auto;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+}
+.tab {
+  flex-shrink: 0; padding: 7px 14px; border-radius: 999px; font-size: 0.78rem;
+  font-family: 'Tajawal'; background: var(--n100); color: var(--muted);
+  border: none; cursor: pointer; white-space: nowrap;
+}
+.tab.active { background: var(--primary); color: #fff; font-weight: 700; }
+
+.container { padding: 14px; max-width: 600px; margin: 0 auto; }
+.order-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+  padding: 14px; margin-bottom: 12px; box-shadow: var(--sh-sm);
+}
+.o-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.o-number { font-family: 'Inter'; font-weight: 800; color: var(--primary); font-size: 0.92rem; }
+.o-date { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+.badge { font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
+.badge.pending_verification { background: #E1F1F2; color: var(--warning); }
+.badge.new { background: #E1F1F2; color: var(--warning); }
+.badge.prepared { background: var(--n100); color: var(--primary); }
+.badge.out_for_delivery { background: var(--n100); color: var(--primary); }
+.badge.delivered { background: #E7F4E8; color: var(--success); }
+.badge.cancelled { background: #FBEAEA; color: var(--error); }
+
+.o-customer { margin-top: 10px; font-weight: 700; font-size: 0.9rem; }
+.o-meta { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+.o-amounts { display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.85rem; background: var(--n100); padding: 8px 10px; border-radius: var(--r-md); }
+.o-amounts b { color: var(--primary); }
+
+.details { display: none; margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 10px; }
+.details.open { display: block; }
+.item-line { display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 5px; }
+.toggle-link { font-size: 0.78rem; color: var(--primary); text-decoration: underline; cursor: pointer; margin-top: 8px; display: inline-block; }
+
+.actions { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
+.main-action {
+  flex: 1; padding: 10px; background: var(--primary); color: #fff; border: none;
+  border-radius: var(--r-md); font-weight: 700; font-family: 'Tajawal'; font-size: 0.85rem; cursor: pointer;
+}
+.cancel-link { font-size: 0.76rem; color: var(--error); background: none; border: none; cursor: pointer; font-family: 'Tajawal'; }
+.empty, .loading { text-align: center; padding: 50px 20px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <span class="wordmark">CRYSTAL</span>
+  <a href="admin.html" class="back-link">← رجوع للإدارة</a>
+</header>
+
+<div class="tabs" id="tabs"></div>
+<div class="container">
+  <div id="list" class="loading">جاري تحميل الطلبات...</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://ptahgriuztxqsegkueln.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const TABS = [
+    { key: "all", label: "الكل" },
+    { key: "pending_verification", label: "بانتظار التأكيد" },
+    { key: "new", label: "طلبات جديدة" },
+    { key: "prepared", label: "تم التجهيز" },
+    { key: "out_for_delivery", label: "قيد التوصيل" },
+    { key: "delivered", label: "تم التسليم" },
+    { key: "cancelled", label: "ملغى" },
+  ];
+
+  const STATUS_LABEL = {
+    pending_verification: "بانتظار التأكيد",
+    new: "طلب جديد",
+    prepared: "تم التجهيز",
+    out_for_delivery: "قيد التوصيل",
+    delivered: "تم التسليم",
+    cancelled: "ملغى"
+  };
+
+  const MAIN_ACTION = {
+    pending_verification: { label: "تأكيد الدفع", next: "new", newPayment: "verified" },
+    new: { label: "تم التجهيز", next: "prepared" },
+    prepared: { label: "تسليم لشركة التوصيل", next: "out_for_delivery" },
+    out_for_delivery: { label: "تم التسليم", next: "delivered" }
+  };
+
+  let allOrders = [];
+  let currentTab = "all";
+  let openDetails = {};
+
+  async function checkAuth() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) { window.location.href = "admin-login.html"; return false; }
+    return true;
+  }
+
+  function renderTabs() {
+    document.getElementById("tabs").innerHTML = TABS.map(t =>
+      `<button class="tab ${t.key === currentTab ? 'active' : ''}" onclick="setTab('${t.key}')">${t.label}</button>`
+    ).join("");
+  }
+
+  function setTab(key) {
+    currentTab = key;
+    renderTabs();
+    renderList();
+  }
+
+  async function loadOrders() {
+    const ok = await checkAuth();
+    if (!ok) return;
+
+    const { data, error } = await supabaseClient
+      .from("orders")
+      .select(`
+        id, order_number, status, payment_method, payment_status,
+        products_subtotal, shipping_fee, grand_total, created_at,
+        customers ( name, phone, shop_name, area ),
+        cities ( name )
+      `)
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      document.getElementById("list").innerHTML = `<div class="empty">خطأ: ${error.message}</div>`;
+      return;
+    }
+
+    allOrders = data || [];
+    renderTabs();
+    renderList();
+  }
+
+  function renderList() {
+    const list = document.getElementById("list");
+    const filtered = currentTab === "all" ? allOrders : allOrders.filter(o => o.status === currentTab);
+
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="empty">لا توجد طلبات في هذا القسم</div>`;
+      return;
+    }
+
+    list.innerHTML = filtered.map(o => {
+      const customer = o.customers;
+      const city = o.cities;
+      const action = MAIN_ACTION[o.status];
+      const paymentLabel = o.payment_method === "bank_transfer" ? "تحويل مصرفي" : "دفع عند الاستلام";
+      const dateStr = new Date(o.created_at).toLocaleString("ar-LY", { dateStyle: "medium", timeStyle: "short" });
+      const isOpen = openDetails[o.id] ? "open" : "";
+      const canCancel = o.status !== "delivered" && o.status !== "cancelled";
+
+      return `
+        <div class="order-card">
+          <div class="o-top">
+            <div>
+              <div class="o-number">#${o.order_number}</div>
+              <div class="o-date">${dateStr}</div>
+            </div>
+            <span class="badge ${o.status}">${STATUS_LABEL[o.status]}</span>
+          </div>
+
+          <div class="o-customer">${customer?.name || "—"}${customer?.shop_name ? " — " + customer.shop_name : ""}</div>
+          <div class="o-meta">${city?.name || ""} ${customer?.area ? "- " + customer.area : ""} · ${customer?.phone || ""}</div>
+          <div class="o-meta">طريقة الدفع: ${paymentLabel}</div>
+
+          <div class="o-amounts">
+            <span>المنتجات: <b class="en">${o.products_subtotal}</b> د.ل</span>
+            <span>التوصيل: <b class="en">${o.shipping_fee}</b> د.ل</span>
+            <span>الإجمالي: <b class="en">${o.grand_total}</b> د.ل</span>
+          </div>
+
+          <div class="toggle-link" onclick="toggleDetails('${o.id}')">${isOpen ? "إخفاء تفاصيل المنتجات" : "عرض تفاصيل المنتجات"}</div>
+          <div class="details ${isOpen}" id="details-${o.id}"></div>
+
+          <div class="actions">
+            ${action ? `<button class="main-action" onclick="doAction('${o.id}', '${action.next}', ${action.newPayment ? `'${action.newPayment}'` : 'null'})">${action.label}</button>` : ''}
+            ${canCancel ? `<button class="cancel-link" onclick="cancelOrder('${o.id}')">إلغاء الطلب</button>` : ''}
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    Object.keys(openDetails).forEach(id => {
+      if (openDetails[id]) loadOrderItems(id);
+    });
+  }
+
+  async function toggleDetails(orderId) {
+    openDetails[orderId] = !openDetails[orderId];
+    renderList();
+  }
+
+  async function loadOrderItems(orderId) {
+    const box = document.getElementById(`details-${orderId}`);
+    if (!box) return;
+    box.innerHTML = "جاري التحميل...";
+
+    const { data, error } = await supabaseClient
+      .from("order_items")
+      .select("product_name_snapshot, color_name_snapshot, sale_unit_snapshot, quantity, unit_price, line_total")
+      .eq("order_id", orderId);
+
+    if (error) { box.innerHTML = "تعذر تحميل التفاصيل"; return; }
+
+    box.innerHTML = data.map(item => {
+      const unitLabel = item.sale_unit_snapshot === "dozen" ? "دستة" : "قطعة";
+      return `<div class="item-line">
+        <span>${item.product_name_snapshot}${item.color_name_snapshot ? " (" + item.color_name_snapshot + ")" : ""} × <span class="en">${item.quantity}</span> ${unitLabel}</span>
+        <span class="en">${item.line_total} د.ل</span>
+      </div>`;
+    }).join("");
+  }
+
+  async function doAction(orderId, nextStatus, newPaymentStatus) {
+    const { error } = await supabaseClient.rpc("admin_update_order_status", {
+      p_order_id: orderId,
+      p_new_status: nextStatus,
+      p_new_payment_status: newPaymentStatus
+    });
+
+    if (error) { alert("خطأ: " + error.message); return; }
+    loadOrders();
+  }
+
+  async function cancelOrder(orderId) {
+    const reason = prompt("سبب الإلغاء:");
+    if (reason === null) return;
+
+    const { error } = await supabaseClient.rpc("admin_update_order_status", {
+      p_order_id: orderId,
+      p_new_status: "cancelled",
+      p_cancel_reason: reason || "بدون سبب محدد"
+    });
+
+    if (error) { alert("خطأ: " + error.message); return; }
+    loadOrders();
+  }
+
+  loadOrders();
+</script>
+
+</body>
+</html>
