@@ -18,6 +18,7 @@
   }
   label { display: block; margin: 12px 0 6px; font-size: 14px; color: #444; }
   input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+  .hint { font-size: 12px; color: #999; margin-top: 4px; }
   button {
     width: 100%;
     padding: 12px;
@@ -55,6 +56,10 @@
     <option value="dozen">دستة</option>
   </select>
 
+  <label>الألوان (اختياري)</label>
+  <input type="text" id="colors" placeholder="ذهبي، فضي، أزرق">
+  <div class="hint">افصلي بين كل لون وآخر بفاصلة. اتركيه فاضي لو المنتج بلا ألوان.</div>
+
   <label>صورة المنتج</label>
   <input type="file" id="imageFile" accept="image/*">
 
@@ -68,7 +73,6 @@
   const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // تحقق: هل فيه جلسة دخول فعلا؟ لو لا، ارجعيها لصفحة الدخول
   async function checkAuth() {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) {
@@ -84,6 +88,7 @@
     const name = document.getElementById("name").value.trim();
     const price = parseFloat(document.getElementById("price").value);
     const saleUnit = document.getElementById("saleUnit").value;
+    const colorsRaw = document.getElementById("colors").value.trim();
     const file = document.getElementById("imageFile").files[0];
     const msg = document.getElementById("msg");
     const btn = document.getElementById("saveBtn");
@@ -98,7 +103,6 @@
     btn.textContent = "جاري الحفظ...";
     msg.textContent = "";
 
-    // 1. إنشاء المنتج في جدول products
     const { data: product, error: productError } = await supabaseClient
       .from("products")
       .insert({ name, price, sale_unit: saleUnit, active: true })
@@ -113,7 +117,6 @@
       return;
     }
 
-    // 2. رفع الصورة لـ Storage
     const fileExt = file.name.split('.').pop();
     const filePath = `${product.id}-${Date.now()}.${fileExt}`;
 
@@ -129,12 +132,10 @@
       return;
     }
 
-    // 3. جلب الرابط العام للصورة
     const { data: urlData } = supabaseClient.storage
       .from("product-images")
       .getPublicUrl(filePath);
 
-    // 4. ربط الصورة بالمنتج في جدول product_images
     const { error: imageError } = await supabaseClient
       .from("product_images")
       .insert({ product_id: product.id, image_url: urlData.publicUrl, sort_order: 0 });
@@ -147,10 +148,39 @@
       return;
     }
 
+    // معالجة الألوان لو اتكتبت
+    if (colorsRaw) {
+      const colorNames = colorsRaw
+        .split(/[,،]/)
+        .map(c => c.trim())
+        .filter(c => c.length > 0);
+
+      if (colorNames.length > 0) {
+        const colorRows = colorNames.map(colorName => ({
+          product_id: product.id,
+          color_name: colorName,
+          active: true
+        }));
+
+        const { error: colorsError } = await supabaseClient
+          .from("product_colors")
+          .insert(colorRows);
+
+        if (colorsError) {
+          msg.textContent = "تم حفظ المنتج والصورة، لكن صار خطأ بالألوان: " + colorsError.message;
+          msg.className = "msg err";
+          btn.disabled = false;
+          btn.textContent = "حفظ المنتج";
+          return;
+        }
+      }
+    }
+
     msg.textContent = "تم حفظ المنتج بنجاح!";
     msg.className = "msg ok";
     document.getElementById("name").value = "";
     document.getElementById("price").value = "";
+    document.getElementById("colors").value = "";
     document.getElementById("imageFile").value = "";
     btn.disabled = false;
     btn.textContent = "حفظ المنتج";
