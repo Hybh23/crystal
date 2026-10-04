@@ -56,7 +56,11 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
 
 .details { display: none; margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 10px; }
 .details.open { display: block; }
-.item-line { display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 5px; }
+.item-line { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.item-thumb { width: 42px; height: 42px; border-radius: var(--r-md); object-fit: cover; background: var(--n100); flex-shrink: 0; }
+.item-line .item-text { flex: 1; font-size: 0.82rem; }
+.item-line .item-sub { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+.item-line .item-total { font-size: 0.82rem; flex-shrink: 0; }
 .toggle-link { font-size: 0.78rem; color: var(--primary); text-decoration: underline; cursor: pointer; margin-top: 8px; display: inline-block; }
 
 .actions { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
@@ -224,22 +228,46 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
     if (!box) return;
     box.innerHTML = "جاري التحميل...";
 
-    const { data, error } = await supabaseClient
+    const { data: items, error } = await supabaseClient
       .from("order_items")
-      .select("product_name_snapshot, color_name_snapshot, sale_unit_snapshot, quantity, unit_price, line_total")
+      .select("product_id, product_name_snapshot, color_name_snapshot, sale_unit_snapshot, quantity, unit_price, line_total")
       .eq("order_id", orderId);
 
     if (error) { box.innerHTML = "تعذر تحميل التفاصيل"; return; }
 
-    box.innerHTML = data.map(item => {
+    const productIds = [...new Set(items.map(i => i.product_id).filter(Boolean))];
+    let imagesMap = {};
+
+    if (productIds.length > 0) {
+      const { data: images } = await supabaseClient
+        .from("product_images")
+        .select("product_id, image_url, sort_order")
+        .in("product_id", productIds)
+        .order("sort_order");
+
+      images?.forEach(img => {
+        if (!imagesMap[img.product_id]) imagesMap[img.product_id] = img.image_url;
+      });
+    }
+
+    box.innerHTML = items.map(item => {
       const unitLabel = item.sale_unit_snapshot === "dozen" ? "دستة" : "قطعة";
-      return `<div class="item-line">
-        <span>${item.product_name_snapshot}${item.color_name_snapshot ? " (" + item.color_name_snapshot + ")" : ""} × <span class="en">${item.quantity}</span> ${unitLabel}</span>
-        <span class="en">${item.line_total} د.ل</span>
-      </div>`;
+      const img = item.product_id && imagesMap[item.product_id]
+        ? imagesMap[item.product_id]
+        : "https://via.placeholder.com/60?text=—";
+
+      return `
+        <div class="item-line">
+          <img src="${img}" class="item-thumb" alt="${item.product_name_snapshot}">
+          <div class="item-text">
+            <div>${item.product_name_snapshot}${item.color_name_snapshot ? " (" + item.color_name_snapshot + ")" : ""}</div>
+            <div class="item-sub">× <span class="en">${item.quantity}</span> ${unitLabel}</div>
+          </div>
+          <span class="en item-total">${item.line_total} د.ل</span>
+        </div>
+      `;
     }).join("");
   }
-
   async function doAction(orderId, nextStatus, newPaymentStatus) {
     const { error } = await supabaseClient.rpc("admin_update_order_status", {
       p_order_id: orderId,
