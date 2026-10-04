@@ -160,8 +160,10 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
 
   function renderList() {
     const list = document.getElementById("list");
-    const filtered = currentTab === "all" ? allOrders : allOrders.filter(o => o.status === currentTab);
-
+    let filtered;
+    if (currentTab === "all") filtered = allOrders.filter(o => ACTIVE_STATUSES.includes(o.status));
+    else if (currentTab === "archive") filtered = allOrders.filter(o => ARCHIVE_STATUSES.includes(o.status));
+    else filtered = allOrders.filter(o => o.status === currentTab);
     if (filtered.length === 0) {
       list.innerHTML = `<div class="empty">لا توجد طلبات في هذا القسم</div>`;
       return;
