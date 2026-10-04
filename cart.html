@@ -122,7 +122,7 @@
       container.innerHTML = `
         <div class="empty">
           السلة فاضية حاليًا.<br><br>
-          <a href="index.html">تصفح المنتجات</a>
+          <a href="index.html">تصفحي المنتجات</a>
         </div>
       `;
       return;
@@ -161,9 +161,9 @@
           <span>إجمالي المنتجات</span>
           <span>${subtotal.toFixed(2)} د.ل</span>
         </div>
-        ${belowMin ? `<div class="min-warning">أضيف ${remaining} د.ل أخرى من المنتجات لإكمال الحد الأدنى للطلب (300 د.ل).</div>` : ""}
+        ${belowMin ? `<div class="min-warning">أضيفي ${remaining} د.ل أخرى من المنتجات لإكمال الحد الأدنى للطلب (300 د.ل).</div>` : ""}
         <a href="checkout.html" class="checkout-btn ${belowMin ? 'disabled' : ''}">
-          ${belowMin ? "أكمل الحد الأدنى أول" : "متابعة الطلب"}
+          ${belowMin ? "أكملي الحد الأدنى أول" : "متابعة الطلب"}
         </a>
       </div>
     `;
