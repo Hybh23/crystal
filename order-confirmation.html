@@ -56,7 +56,7 @@ h2 { color: var(--text); margin-bottom: 14px; font-size: 1.2rem; }
     <div class="row"><span>الإجمالي</span><span class="en">${total ? parseFloat(total).toFixed(2) + " د.ل" : "—"}</span></div>
     <div class="row"><span>طريقة الدفع</span><span>${methodLabel}</span></div>
     <div class="row"><span>حالة الطلب</span><span>${statusLabel}</span></div>
-    ${method === "bank_transfer" ? `<div class="note">لا تنسي إرسال صورة إيصال التحويل مع رقم طلبك عبر واتساب لتأكيد الدفع.</div>` : ""}
+    ${method === "bank_transfer" ? `<div class="note">لا تنسى إرسال صورة إيصال التحويل مع رقم طلبك عبر واتساب لتأكيد الدفع.</div>` : ""}
     <a href="index.html" class="back-link">← رجوع للمنتجات</a>
   `;
 </script>
