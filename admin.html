@@ -85,7 +85,7 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
   async function checkAuth() {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) {
-      window.location.href = "admin-login.html";
+      window.location.href = "admin-orders.html";
       return;
     }
     document.getElementById("checking").style.display = "none";
