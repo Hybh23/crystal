@@ -3,77 +3,70 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>إضافة منتج | كرستال</title>
+<title>إدارة المنتجات | كرستال</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#FBF9F4;--surface:#ffffff;--text:#241F17;--muted:#79705F;--border:#E7E0D0;
-  --primary:#A9822A;--n100:#F7F3E9;--success:#2E7D32;--error:#DC2626;
+  --primary:#A9822A;--n100:#F7F3E9;--success:#2E7D32;--warning:#0E7C86;--error:#DC2626;
   --r-md:8px;--r-lg:12px;--sh-sm:0 1px 2px rgba(16,24,40,.06);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color: var(--text); }
-.site-header { background: var(--primary); color: #fff; padding: 16px; text-align: center; }
+.en { font-family: 'Inter', sans-serif; direction: ltr; unicode-bidi: isolate; }
+.site-header {
+  background: var(--primary); color: #fff; padding: 16px 20px;
+  display: flex; justify-content: space-between; align-items: center;
+}
 .site-header .wordmark { font-family: 'Inter'; font-weight: 800; letter-spacing: 1.5px; font-size: 1.1rem; }
-.site-header .page-title { font-size: 0.8rem; color: #F2E6C8; margin-top: 2px; }
-
-.form-box {
-  max-width: 420px; margin: 20px auto; background: var(--surface);
-  border: 1px solid var(--border); padding: 22px; border-radius: var(--r-lg);
-  box-shadow: var(--sh-sm);
+.back-link { color: #fff; text-decoration: none; font-size: 0.82rem; opacity: 0.9; }
+.container { padding: 16px; max-width: 560px; margin: 0 auto; }
+.add-link {
+  display: block; text-align: center; background: var(--primary); color: #fff;
+  padding: 12px; border-radius: var(--r-md); text-decoration: none;
+  font-weight: 700; font-size: 0.9rem; margin-bottom: 16px;
 }
-label { display: block; margin: 12px 0 6px; font-size: 0.8rem; color: var(--muted); }
-input, select {
-  width: 100%; padding: 10px; border: 1.5px solid var(--border);
-  border-radius: var(--r-md); font-size: 0.88rem; font-family: 'Tajawal';
-  background: var(--surface); color: var(--text);
+.product-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+  padding: 14px; margin-bottom: 12px; box-shadow: var(--sh-sm);
 }
-input:focus, select:focus { outline: none; border-color: var(--primary); }
-.hint { font-size: 0.72rem; color: var(--muted); margin-top: 4px; }
-button {
-  width: 100%; padding: 13px; margin-top: 18px; background: var(--primary);
-  color: #fff; border: none; border-radius: var(--r-md); font-size: 0.92rem;
-  font-weight: 700; font-family: 'Tajawal'; cursor: pointer;
+.p-top { display: flex; gap: 12px; }
+.p-top img { width: 64px; height: 64px; border-radius: var(--r-md); object-fit: cover; background: var(--n100); flex-shrink: 0; }
+.p-info { flex: 1; }
+.p-name { font-weight: 700; font-size: 0.95rem; }
+.badges { display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap; }
+.badge { font-size: 0.7rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
+.badge.active { background: #E7F4E8; color: var(--success); }
+.badge.inactive { background: #FBEAEA; color: var(--error); }
+.badge.low { background: #E1F1F2; color: var(--warning); }
+.price-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.price-row input {
+  width: 90px; padding: 7px; border: 1.5px solid var(--border);
+  border-radius: var(--r-md); font-size: 0.85rem; font-family: 'Inter';
 }
-button:disabled { opacity: 0.6; }
-.msg { text-align: center; margin-top: 12px; font-size: 0.85rem; font-weight: 700; }
-.msg.ok { color: var(--success); }
-.msg.err { color: var(--error); }
-.checking { text-align: center; padding: 50px 20px; color: var(--muted); }
+.price-row span { font-size: 0.8rem; color: var(--muted); }
+.actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.actions button {
+  flex: 1; min-width: 80px; padding: 8px; border: 1.5px solid var(--border);
+  border-radius: var(--r-md); background: var(--surface); font-size: 0.78rem;
+  font-family: 'Tajawal'; cursor: pointer; color: var(--text);
+}
+.actions button.save { background: var(--primary); color: #fff; border: none; font-weight: 700; }
+.actions button.danger { color: var(--error); border-color: var(--error); }
+.empty, .loading { text-align: center; padding: 50px 20px; color: var(--muted); }
 </style>
 </head>
 <body>
 
 <header class="site-header">
-  <div class="wordmark">CRYSTAL</div>
-  <div class="page-title">إضافة منتج جديد</div>
+  <span class="wordmark">CRYSTAL</span>
+  <a href="admin.html" class="back-link">← رجوع للإدارة</a>
 </header>
 
-<div class="checking" id="checking">جاري التحقق من صلاحيتك...</div>
-
-<div class="form-box" id="formBox" style="display:none;">
-  <label>اسم المنتج</label>
-  <input type="text" id="name" placeholder="مثلا: مشط">
-
-  <label>السعر (د.ل)</label>
-  <input type="number" id="price" placeholder="60">
-
-  <label>وحدة البيع</label>
-  <select id="saleUnit">
-    <option value="piece">قطعة</option>
-    <option value="dozen">دستة</option>
-  </select>
-
-  <label>الألوان (اختياري)</label>
-  <input type="text" id="colors" placeholder="ذهبي، فضي، أزرق">
-  <div class="hint">افصل بين كل لون وآخر بفاصلة. خليه فاضي لو المنتج بلا ألوان.</div>
-
-  <label>صورة المنتج</label>
-  <input type="file" id="imageFile" accept="image/*">
-
-  <button id="saveBtn" onclick="saveProduct()">حفظ المنتج</button>
-  <div class="msg" id="msg"></div>
+<div class="container">
+  <a href="admin-add-product.html" class="add-link">+ إضافة منتج جديد</a>
+  <div id="list" class="loading">جاري تحميل المنتجات...</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -84,105 +77,105 @@ button:disabled { opacity: 0.6; }
 
   async function checkAuth() {
     const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) {
-      window.location.href = "admin-login.html";
-      return;
-    }
-    document.getElementById("checking").style.display = "none";
-    document.getElementById("formBox").style.display = "block";
+    if (!session) { window.location.href = "admin-login.html"; return false; }
+    return true;
   }
-  checkAuth();
 
-  async function saveProduct() {
-    const name = document.getElementById("name").value.trim();
-    const price = parseFloat(document.getElementById("price").value);
-    const saleUnit = document.getElementById("saleUnit").value;
-    const colorsRaw = document.getElementById("colors").value.trim();
-    const file = document.getElementById("imageFile").files[0];
-    const msg = document.getElementById("msg");
-    const btn = document.getElementById("saveBtn");
+  async function loadProducts() {
+    const ok = await checkAuth();
+    if (!ok) return;
 
-    if (!name || !price || !file) {
-      msg.textContent = "املي الاسم والسعر واختار صورة";
-      msg.className = "msg err";
-      return;
-    }
+    const list = document.getElementById("list");
 
-    btn.disabled = true;
-    btn.textContent = "جاري الحفظ...";
-    msg.textContent = "";
-
-    const { data: product, error: productError } = await supabaseClient
+    const { data: products, error } = await supabaseClient
       .from("products")
-      .insert({ name, price, sale_unit: saleUnit, active: true })
-      .select()
-      .single();
+      .select(`id, name, price, sale_unit, active, low_stock, product_images ( image_url, sort_order )`)
+      .order("created_at", { ascending: false });
 
-    if (productError) {
-      msg.textContent = "خطأ بالمنتج: " + productError.message;
-      msg.className = "msg err";
-      btn.disabled = false;
-      btn.textContent = "حفظ المنتج";
+    if (error) {
+      list.innerHTML = `<div class="empty">خطأ: ${error.message}</div>`;
       return;
     }
 
-    const fileExt = file.name.split('.').pop();
-    const filePath = `${product.id}-${Date.now()}.${fileExt}`;
-
-    const { error: uploadError } = await supabaseClient.storage
-      .from("product-images")
-      .upload(filePath, file);
-
-    if (uploadError) {
-      msg.textContent = "تم حفظ المنتج لكن صار خطأ بالصورة: " + uploadError.message;
-      msg.className = "msg err";
-      btn.disabled = false;
-      btn.textContent = "حفظ المنتج";
+    if (!products || products.length === 0) {
+      list.innerHTML = `<div class="empty">لا توجد منتجات بعد</div>`;
       return;
     }
 
-    const { data: urlData } = supabaseClient.storage
-      .from("product-images")
-      .getPublicUrl(filePath);
+    list.innerHTML = products.map(p => {
+      const images = (p.product_images || []).sort((a,b) => a.sort_order - b.sort_order);
+      const img = images[0]?.image_url || "https://via.placeholder.com/150?text=No+Image";
+      const unitLabel = p.sale_unit === "dozen" ? "دستة" : "قطعة";
 
-    const { error: imageError } = await supabaseClient
-      .from("product_images")
-      .insert({ product_id: product.id, image_url: urlData.publicUrl, sort_order: 0 });
+      return `
+        <div class="product-card" id="product-${p.id}">
+          <div class="p-top">
+            <img src="${img}" alt="${p.name}">
+            <div class="p-info">
+              <div class="p-name">${p.name}</div>
+              <div class="badges">
+                <span class="badge ${p.active ? 'active' : 'inactive'}" id="status-badge-${p.id}">${p.active ? 'متوفر' : 'غير متوفر'}</span>
+                ${p.low_stock ? `<span class="badge low" id="low-badge-${p.id}">آخر القطع</span>` : `<span id="low-badge-${p.id}"></span>`}
+              </div>
+            </div>
+          </div>
 
-    if (imageError) {
-      msg.textContent = "تم حفظ المنتج لكن صار خطأ بربط الصورة: " + imageError.message;
-      msg.className = "msg err";
-      btn.disabled = false;
-      btn.textContent = "حفظ المنتج";
-      return;
-    }
+          <div class="price-row">
+            <input type="number" id="price-${p.id}" value="${p.price}">
+            <span>د.ل / ${unitLabel}</span>
+          </div>
 
-    if (colorsRaw) {
-      const colorNames = colorsRaw.split(/[,،]/).map(c => c.trim()).filter(c => c.length > 0);
-      if (colorNames.length > 0) {
-        const colorRows = colorNames.map(colorName => ({
-          product_id: product.id, color_name: colorName, active: true
-        }));
-        const { error: colorsError } = await supabaseClient.from("product_colors").insert(colorRows);
-        if (colorsError) {
-          msg.textContent = "تم حفظ المنتج والصورة، لكن صار خطأ بالألوان: " + colorsError.message;
-          msg.className = "msg err";
-          btn.disabled = false;
-          btn.textContent = "حفظ المنتج";
-          return;
-        }
-      }
-    }
-
-    msg.textContent = "تم حفظ المنتج بنجاح!";
-    msg.className = "msg ok";
-    document.getElementById("name").value = "";
-    document.getElementById("price").value = "";
-    document.getElementById("colors").value = "";
-    document.getElementById("imageFile").value = "";
-    btn.disabled = false;
-    btn.textContent = "حفظ المنتج";
+          <div class="actions">
+            <button class="save" onclick="savePrice('${p.id}')">حفظ السعر</button>
+            <button onclick="toggleActive('${p.id}', ${p.active})">${p.active ? 'إيقاف التوفر' : 'تفعيل التوفر'}</button>
+            <button onclick="toggleLowStock('${p.id}', ${p.low_stock})">${p.low_stock ? 'إزالة علامة آخر القطع' : 'تحديد كآخر القطع'}</button>
+            <button class="danger" onclick="deleteProduct('${p.id}')">حذف نهائي</button>
+          </div>
+        </div>
+      `;
+    }).join("");
   }
+
+  async function savePrice(id) {
+    const newPrice = parseFloat(document.getElementById(`price-${id}`).value);
+    if (!newPrice || newPrice <= 0) { alert("السعر غير صحيح"); return; }
+
+    const { error } = await supabaseClient.from("products").update({ price: newPrice }).eq("id", id);
+    if (error) { alert("خطأ: " + error.message); return; }
+    alert("تم حفظ السعر");
+  }
+
+  async function toggleActive(id, currentActive) {
+    const { error } = await supabaseClient.from("products").update({ active: !currentActive }).eq("id", id);
+    if (error) { alert("خطأ: " + error.message); return; }
+    loadProducts();
+  }
+
+  async function toggleLowStock(id, currentLow) {
+    const { error } = await supabaseClient.from("products").update({ low_stock: !currentLow }).eq("id", id);
+    if (error) { alert("خطأ: " + error.message); return; }
+    loadProducts();
+  }
+
+  async function deleteProduct(id) {
+    const confirmed = confirm("تأكيد حذف هذا المنتج نهائيًا؟ هذا الإجراء لا يمكن التراجع عنه.");
+    if (!confirmed) return;
+
+    const { error } = await supabaseClient.from("products").delete().eq("id", id);
+
+    if (error) {
+      if (error.message.includes("foreign key") || error.code === "23503") {
+        alert("هذا المنتج مرتبط بطلبات سابقة، لا يمكن حذفه نهائيًا. يمكن استخدام زر \"إيقاف التوفر\" بدلًا من ذلك.");
+      } else {
+        alert("خطأ: " + error.message);
+      }
+      return;
+    }
+
+    loadProducts();
+  }
+
+  loadProducts();
 </script>
 
 </body>
