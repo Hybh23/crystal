@@ -4,29 +4,76 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>إتمام الطلب | كرستال</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Tahoma, Arial, sans-serif; background: #f8f7fb; color: #222; }
-  header { background: #2b1f4d; color: white; padding: 16px; text-align: center; }
-  .container { padding: 14px; max-width: 480px; margin: 0 auto; }
-  .box { background: white; border-radius: 10px; padding: 16px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-  label { display: block; font-size: 13px; color: #555; margin: 10px 0 4px; }
-  input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
-  textarea { resize: vertical; min-height: 50px; }
-  .pay-option { display: flex; align-items: center; gap: 8px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-top: 8px; cursor: pointer; }
-  .pay-option input { width: auto; }
-  .bank-details { background: #f1f0fa; border-radius: 8px; padding: 12px; margin-top: 10px; font-size: 13px; display: none; }
-  .bank-details div { margin-bottom: 4px; }
-  .summary-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px; }
-  .summary-row.total { font-weight: bold; font-size: 16px; border-top: 1px solid #eee; padding-top: 8px; }
-  .submit-btn { width: 100%; padding: 14px; background: #2b1f4d; color: white; border: none; border-radius: 8px; font-size: 15px; margin-top: 10px; cursor: pointer; }
-  .submit-btn:disabled { opacity: 0.6; }
-  .err { color: #c0392b; font-size: 13px; text-align: center; margin-top: 10px; }
+:root{
+  --bg:#FBF9F4;--surface:#ffffff;--text:#241F17;--muted:#79705F;--border:#E7E0D0;
+  --primary:#A9822A;--secondary:#B9975B;
+  --n100:#F7F3E9;--n300:#E2D9C3;
+  --success:#2E7D32;--warning:#0E7C86;--error:#DC2626;
+  --r-sm:4px;--r-md:8px;--r-lg:12px;--r-xl:20px;
+  --sh-sm:0 1px 2px rgba(16,24,40,.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color: var(--text); }
+.en { font-family: 'Inter', sans-serif; direction: ltr; unicode-bidi: isolate; }
+
+.site-header { background: var(--primary); color: #fff; padding: 16px 20px; text-align: center; }
+.site-header .wordmark { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 1.1rem; letter-spacing: 1.5px; }
+.site-header .page-title { font-size: 0.8rem; color: #F2E6C8; margin-top: 2px; }
+
+.container { padding: 14px; max-width: 480px; margin: 0 auto; }
+.box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: var(--sh-sm);
+}
+label { display: block; font-size: 0.78rem; color: var(--muted); margin: 10px 0 5px; }
+input, select, textarea {
+  width: 100%; padding: 10px; border: 1.5px solid var(--border);
+  border-radius: var(--r-md); font-size: 0.88rem; font-family: 'Tajawal';
+  background: var(--surface); color: var(--text);
+}
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); }
+textarea { resize: vertical; min-height: 50px; }
+
+.pay-option {
+  display: flex; align-items: center; gap: 8px; padding: 11px;
+  border: 1.5px solid var(--border); border-radius: var(--r-md);
+  margin-top: 8px; cursor: pointer; font-size: 0.9rem;
+}
+.pay-option input { width: auto; }
+.bank-details {
+  background: var(--n100); border-radius: var(--r-md);
+  padding: 14px; margin-top: 10px; font-size: 0.85rem; display: none;
+}
+.bank-details div { margin-bottom: 5px; }
+.bank-details b { color: var(--primary); }
+
+.summary-row { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 7px; }
+.summary-row.total {
+  font-weight: 800; font-size: 1.05rem; color: var(--primary);
+  border-top: 1px solid var(--border); padding-top: 10px;
+}
+.submit-btn {
+  width: 100%; padding: 14px; background: var(--primary); color: #fff;
+  border: none; border-radius: var(--r-md); font-size: 0.95rem;
+  font-weight: 700; font-family: 'Tajawal'; margin-top: 12px; cursor: pointer;
+}
+.submit-btn:disabled { opacity: 0.6; }
+.err { color: var(--error); font-size: 0.82rem; text-align: center; margin-top: 10px; font-weight: 700; }
 </style>
 </head>
 <body>
 
-<header>إتمام الطلب</header>
+<header class="site-header">
+  <div class="wordmark en">CRYSTAL</div>
+  <div class="page-title">إتمام الطلب</div>
+</header>
 
 <div class="container" id="container">جاري التحميل...</div>
 
@@ -37,10 +84,9 @@
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const CART_KEY = "crystal_cart";
 
-  // ضعي هنا بيانات حمودة البنكية الحقيقية
   const BANK_NAME = "مصرف الصحاري";
-const BANK_ACCOUNT_HOLDER = "محمد ابراهيم محمد زيدان";
-const BANK_ACCOUNT_NUMBER = "2009392184 / IBAN: LY44006009000002009392184";
+  const BANK_ACCOUNT_HOLDER = "محمد ابراهيم محمد زيدان";
+  const BANK_ACCOUNT_NUMBER = "2009392184 / IBAN: LY44006009000002009392184";
 
   function getCart() {
     try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
@@ -59,7 +105,7 @@ const BANK_ACCOUNT_NUMBER = "2009392184 / IBAN: LY44006009000002009392184";
       return;
     }
 
-    const { data, error } = await supabaseClient
+    const { data } = await supabaseClient
       .from("cities")
       .select("id, name, shipping_price")
       .eq("active", true)
@@ -114,9 +160,9 @@ const BANK_ACCOUNT_NUMBER = "2009392184 / IBAN: LY44006009000002009392184";
       </div>
 
       <div class="box">
-        <div class="summary-row"><span>إجمالي المنتجات</span><span>${subtotal.toFixed(2)} د.ل</span></div>
-        <div class="summary-row"><span>التوصيل</span><span id="shippingDisplay">—</span></div>
-        <div class="summary-row total"><span>الإجمالي</span><span id="grandTotalDisplay">—</span></div>
+        <div class="summary-row"><span>إجمالي المنتجات</span><span class="en">${subtotal.toFixed(2)} د.ل</span></div>
+        <div class="summary-row"><span>التوصيل</span><span class="en" id="shippingDisplay">—</span></div>
+        <div class="summary-row total"><span>الإجمالي</span><span class="en" id="grandTotalDisplay">—</span></div>
         <button class="submit-btn" id="submitBtn" onclick="submitOrder()">تأكيد الطلب</button>
         <div class="err" id="errMsg"></div>
       </div>
@@ -190,7 +236,8 @@ const BANK_ACCOUNT_NUMBER = "2009392184 / IBAN: LY44006009000002009392184";
 
     const result = data[0];
     localStorage.removeItem(CART_KEY);
-window.location.href = `order-confirmation.html?order=${encodeURIComponent(result.result_order_number)}&total=${result.result_grand_total}&method=${paymentMethod}`;  }
+    window.location.href = `order-confirmation.html?order=${encodeURIComponent(result.result_order_number)}&total=${result.result_grand_total}&method=${paymentMethod}`;
+  }
 
   init();
 </script>
