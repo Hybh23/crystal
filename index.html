@@ -82,7 +82,8 @@
 
 <header>
   <span class="title">كرستال | المنتجات</span>
-<a href="cart.html" class="cart-badge" id="cartBadge" style="text-decoration:none;">السلة (0)</a></header>
+  <span class="cart-badge" id="cartBadge">السلة (0)</span>
+</header>
 
 <div id="productsGrid" class="grid">
   <div class="loading">جاري تحميل المنتجات...</div>
@@ -95,7 +96,7 @@
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   const CART_KEY = "crystal_cart";
-    <a href="cart.html" class="cart-badge" id="cartBadge" style="text-decoration:none;">السلة (0)</a>
+
   function getCart() {
     try {
       return JSON.parse(localStorage.getItem(CART_KEY)) || [];
