@@ -86,16 +86,16 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
   const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  const TABS = [
-    { key: "all", label: "الكل" },
+    const TABS = [
+    { key: "all", label: "تحتاج إجراء" },
     { key: "pending_verification", label: "بانتظار التأكيد" },
     { key: "new", label: "طلبات جديدة" },
     { key: "prepared", label: "تم التجهيز" },
-    { key: "out_for_delivery", label: "قيد التوصيل" },
-    { key: "delivered", label: "تم التسليم" },
-    { key: "cancelled", label: "ملغى" },
+    { key: "archive", label: "الأخيرة" },
   ];
 
+  const ACTIVE_STATUSES = ["pending_verification", "new", "prepared"];
+  const ARCHIVE_STATUSES = ["out_for_delivery", "delivered", "cancelled"];
   const STATUS_LABEL = {
     pending_verification: "بانتظار التأكيد",
     new: "طلب جديد",
