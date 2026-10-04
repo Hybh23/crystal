@@ -4,85 +4,107 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>كرستال | المنتجات</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Tahoma, Arial, sans-serif; background: #f8f7fb; color: #222; }
-  header {
-    background: #2b1f4d;
-    color: white;
-    padding: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  header .title { font-size: 20px; }
-  header .cart-badge {
-    background: white;
-    color: #2b1f4d;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: bold;
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 12px;
-    padding: 12px;
-  }
-  .card {
-    background: white;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
-  }
-  .card img {
-    width: 100%;
-    height: 140px;
-    object-fit: cover;
-    background: #eee;
-  }
-  .card-body { padding: 10px; flex: 1; display: flex; flex-direction: column; }
-  .card-body h3 { font-size: 15px; margin-bottom: 4px; }
-  .price { color: #2b1f4d; font-weight: bold; font-size: 14px; }
-  .unit { color: #888; font-size: 12px; }
-  .field { margin-top: 8px; }
-  .field label { font-size: 12px; color: #666; display: block; margin-bottom: 3px; }
-  .field select, .field input {
-    width: 100%;
-    padding: 6px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 13px;
-  }
-  .add-btn {
-    margin-top: 10px;
-    padding: 8px;
-    background: #2b1f4d;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: pointer;
-  }
-  .add-btn:active { opacity: 0.8; }
-  .added-msg {
-    font-size: 12px;
-    color: #1a7a3c;
-    text-align: center;
-    margin-top: 6px;
-    display: none;
-  }
-  .loading, .empty { text-align: center; padding: 40px; color: #888; }
+:root{
+  --bg:#FBF9F4;--surface:#ffffff;--text:#241F17;--muted:#79705F;--border:#E7E0D0;
+  --primary:#A9822A;--secondary:#B9975B;
+  --n100:#F7F3E9;--n300:#E2D9C3;
+  --success:#2E7D32;--warning:#0E7C86;--error:#DC2626;
+  --r-sm:4px;--r-md:8px;--r-lg:12px;--r-xl:20px;
+  --sh-sm:0 1px 2px rgba(16,24,40,.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color: var(--text); }
+.en { font-family: 'Inter', sans-serif; direction: ltr; unicode-bidi: isolate; }
+
+.site-header {
+  background: var(--primary);
+  color: #fff;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.brand { display: flex; flex-direction: column; }
+.wordmark { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 1.4rem; letter-spacing: 2px; }
+.tagline { font-size: 0.72rem; color: #F2E6C8; margin-top: 2px; }
+.cart-badge {
+  background: #fff;
+  color: var(--primary);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+  padding: 16px;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: var(--sh-sm);
+  display: flex;
+  flex-direction: column;
+}
+.card img { width: 100%; height: 140px; object-fit: cover; background: var(--n100); }
+.card-body { padding: 12px; flex: 1; display: flex; flex-direction: column; }
+.card-body h3 { font-size: 0.95rem; margin-bottom: 4px; font-weight: 700; }
+.price { color: var(--primary); font-weight: 800; font-size: 1rem; }
+.unit { color: var(--muted); font-size: 0.78rem; font-family: 'Tajawal'; }
+.field { margin-top: 8px; }
+.field label { font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 3px; }
+.field select, .field input {
+  width: 100%;
+  padding: 8px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: 0.85rem;
+  font-family: 'Tajawal';
+  background: var(--surface);
+  color: var(--text);
+}
+.add-btn {
+  margin-top: 10px;
+  padding: 9px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-md);
+  font-size: 0.85rem;
+  font-family: 'Tajawal';
+  font-weight: 700;
+  cursor: pointer;
+}
+.add-btn:active { opacity: 0.85; }
+.added-msg {
+  font-size: 0.78rem;
+  color: var(--success);
+  text-align: center;
+  margin-top: 6px;
+  display: none;
+  font-weight: 700;
+}
+.loading, .empty { text-align: center; padding: 50px 20px; color: var(--muted); }
 </style>
 </head>
 <body>
 
-<header>
-  <span class="title">كرستال | المنتجات</span>
-  <a href="cart.html" class="cart-badge" id="cartBadge" style="text-decoration:none;">السلة (0)</a></header>
+<header class="site-header">
+  <div class="brand">
+    <span class="wordmark en">CRYSTAL</span>
+    <span class="tagline">للإكسسوارات بالجملة</span>
+  </div>
+  <a href="cart.html" class="cart-badge" id="cartBadge">السلة (0)</a>
+</header>
 
 <div id="productsGrid" class="grid">
   <div class="loading">جاري تحميل المنتجات...</div>
@@ -97,11 +119,8 @@
   const CART_KEY = "crystal_cart";
 
   function getCart() {
-    try {
-      return JSON.parse(localStorage.getItem(CART_KEY)) || [];
-    } catch {
-      return [];
-    }
+    try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
+    catch { return []; }
   }
 
   function saveCart(cart) {
@@ -117,8 +136,6 @@
 
   function addToCart(product, colorName, quantity) {
     const cart = getCart();
-
-    // لو نفس المنتج بنفس اللون موجود، نزيد الكمية بدل ما نكرر السطر
     const existing = cart.find(item => item.product_id === product.id && item.color === (colorName || null));
 
     if (existing) {
@@ -134,7 +151,6 @@
         image: product.image
       });
     }
-
     saveCart(cart);
   }
 
@@ -178,7 +194,7 @@
           <img src="${img}" alt="${p.name}">
           <div class="card-body">
             <h3>${p.name}</h3>
-            <div class="price">${p.price} د.ل <span class="unit">/ ${unitLabel}</span></div>
+            <div class="price"><span class="en">${p.price}</span> د.ل <span class="unit">/ ${unitLabel}</span></div>
 
             ${hasColors ? `
             <div class="field">
