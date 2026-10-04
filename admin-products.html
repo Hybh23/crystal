@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إدارة المنتجات | كرستال</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF9F4;--surface:#ffffff;--text:#241F17;--muted:#79705F;--border:#E7E0D0;
+  --primary:#A9822A;--n100:#F7F3E9;--success:#2E7D32;--warning:#0E7C86;--error:#DC2626;
+  --r-md:8px;--r-lg:12px;--sh-sm:0 1px 2px rgba(16,24,40,.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color: var(--text); }
+.en { font-family: 'Inter', sans-serif; direction: ltr; unicode-bidi: isolate; }
+.site-header {
+  background: var(--primary); color: #fff; padding: 16px 20px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.site-header .wordmark { font-family: 'Inter'; font-weight: 800; letter-spacing: 1.5px; font-size: 1.1rem; }
+.back-link { color: #fff; text-decoration: none; font-size: 0.82rem; opacity: 0.9; }
+.container { padding: 16px; max-width: 560px; margin: 0 auto; }
+.add-link {
+  display: block; text-align: center; background: var(--primary); color: #fff;
+  padding: 12px; border-radius: var(--r-md); text-decoration: none;
+  font-weight: 700; font-size: 0.9rem; margin-bottom: 16px;
+}
+.product-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+  padding: 14px; margin-bottom: 12px; box-shadow: var(--sh-sm);
+}
+.p-top { display: flex; gap: 12px; }
+.p-top img { width: 64px; height: 64px; border-radius: var(--r-md); object-fit: cover; background: var(--n100); flex-shrink: 0; }
+.p-info { flex: 1; }
+.p-name { font-weight: 700; font-size: 0.95rem; }
+.badges { display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap; }
+.badge { font-size: 0.7rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
+.badge.active { background: #E7F4E8; color: var(--success); }
+.badge.inactive { background: #FBEAEA; color: var(--error); }
+.badge.low { background: #E1F1F2; color: var(--warning); }
+.price-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.price-row input {
+  width: 90px; padding: 7px; border: 1.5px solid var(--border);
+  border-radius: var(--r-md); font-size: 0.85rem; font-family: 'Inter';
+}
+.price-row span { font-size: 0.8rem; color: var(--muted); }
+.actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.actions button {
+  flex: 1; min-width: 80px; padding: 8px; border: 1.5px solid var(--border);
+  border-radius: var(--r-md); background: var(--surface); font-size: 0.78rem;
+  font-family: 'Tajawal'; cursor: pointer; color: var(--text);
+}
+.actions button.save { background: var(--primary); color: #fff; border: none; font-weight: 700; }
+.actions button.danger { color: var(--error); border-color: var(--error); }
+.empty, .loading { text-align: center; padding: 50px 20px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <span class="wordmark">CRYSTAL</span>
+  <a href="admin.html" class="back-link">← رجوع للإدارة</a>
+</header>
+
+<div class="container">
+  <a href="admin-add-product.html" class="add-link">+ إضافة منتج جديد</a>
+  <div id="list" class="loading">جاري تحميل المنتجات...</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://ptahgriuztxqsegkueln.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function checkAuth() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) { window.location.href = "admin-login.html"; return false; }
+    return true;
+  }
+
+  async function loadProducts() {
+    const ok = await checkAuth();
+    if (!ok) return;
+
+    const list = document.getElementById("list");
+
+    const { data: products, error } = await supabaseClient
+      .from("products")
+      .select(`id, name, price, sale_unit, active, low_stock, product_images ( image_url, sort_order )`)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      list.innerHTML = `<div class="empty">خطأ: ${error.message}</div>`;
+      return;
+    }
+
+    if (!products || products.length === 0) {
+      list.innerHTML = `<div class="empty">لا توجد منتجات بعد</div>`;
+      return;
+    }
+
+    list.innerHTML = products.map(p => {
+      const images = (p.product_images || []).sort((a,b) => a.sort_order - b.sort_order);
+      const img = images[0]?.image_url || "https://via.placeholder.com/150?text=No+Image";
+      const unitLabel = p.sale_unit === "dozen" ? "دستة" : "قطعة";
+
+      return `
+        <div class="product-card" id="product-${p.id}">
+          <div class="p-top">
+            <img src="${img}" alt="${p.name}">
+            <div class="p-info">
+              <div class="p-name">${p.name}</div>
+              <div class="badges">
+                <span class="badge ${p.active ? 'active' : 'inactive'}" id="status-badge-${p.id}">${p.active ? 'متوفر' : 'غير متوفر'}</span>
+                ${p.low_stock ? `<span class="badge low" id="low-badge-${p.id}">آخر القطع</span>` : `<span id="low-badge-${p.id}"></span>`}
+              </div>
+            </div>
+          </div>
+
+          <div class="price-row">
+            <input type="number" id="price-${p.id}" value="${p.price}">
+            <span>د.ل / ${unitLabel}</span>
+          </div>
+
+          <div class="actions">
+            <button class="save" onclick="savePrice('${p.id}')">حفظ السعر</button>
+            <button onclick="toggleActive('${p.id}', ${p.active})">${p.active ? 'إيقاف التوفر' : 'تفعيل التوفر'}</button>
+            <button onclick="toggleLowStock('${p.id}', ${p.low_stock})">${p.low_stock ? 'إزالة علامة آخر القطع' : 'تحديد كآخر القطع'}</button>
+            <button class="danger" onclick="deleteProduct('${p.id}')">حذف نهائي</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  async function savePrice(id) {
+    const newPrice = parseFloat(document.getElementById(`price-${id}`).value);
+    if (!newPrice || newPrice <= 0) { alert("السعر غير صحيح"); return; }
+
+    const { error } = await supabaseClient.from("products").update({ price: newPrice }).eq("id", id);
+    if (error) { alert("خطأ: " + error.message); return; }
+    alert("تم حفظ السعر");
+  }
+
+  async function toggleActive(id, currentActive) {
+    const { error } = await supabaseClient.from("products").update({ active: !currentActive }).eq("id", id);
+    if (error) { alert("خطأ: " + error.message); return; }
+    loadProducts();
+  }
+
+  async function toggleLowStock(id, currentLow) {
+    const { error } = await supabaseClient.from("products").update({ low_stock: !currentLow }).eq("id", id);
+    if (error) { alert("خطأ: " + error.message); return; }
+    loadProducts();
+  }
+
+  async function deleteProduct(id) {
+    const confirmed = confirm("تأكيد حذف هذا المنتج نهائيًا؟ هذا الإجراء لا يمكن التراجع عنه.");
+    if (!confirmed) return;
+
+    const { error } = await supabaseClient.from("products").delete().eq("id", id);
+
+    if (error) {
+      if (error.message.includes("foreign key") || error.code === "23503") {
+        alert("هذا المنتج مرتبط بطلبات سابقة، لا يمكن حذفه نهائيًا. يمكن استخدام زر \"إيقاف التوفر\" بدلًا من ذلك.");
+      } else {
+        alert("خطأ: " + error.message);
+      }
+      return;
+    }
+
+    loadProducts();
+  }
+
+  loadProducts();
+</script>
+
+</body>
+</html>
