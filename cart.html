@@ -4,94 +4,115 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>السلة | كرستال</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Tahoma, Arial, sans-serif; background: #f8f7fb; color: #222; }
-  header {
-    background: #2b1f4d;
-    color: white;
-    padding: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  header a { color: white; text-decoration: none; font-size: 14px; }
-  .container { padding: 12px; max-width: 500px; margin: 0 auto; }
-  .item {
-    background: white;
-    border-radius: 10px;
-    padding: 10px;
-    margin-bottom: 10px;
-    display: flex;
-    gap: 10px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-  }
-  .item img { width: 70px; height: 70px; border-radius: 8px; object-fit: cover; background: #eee; }
-  .item-info { flex: 1; }
-  .item-info h3 { font-size: 15px; margin-bottom: 4px; }
-  .item-info .meta { font-size: 12px; color: #777; margin-bottom: 6px; }
-  .qty-row { display: flex; align-items: center; gap: 8px; }
-  .qty-row input { width: 55px; padding: 5px; border: 1px solid #ddd; border-radius: 6px; text-align: center; }
-  .line-total { font-weight: bold; color: #2b1f4d; font-size: 14px; }
-  .remove-btn { background: none; border: none; color: #c0392b; font-size: 12px; cursor: pointer; margin-top: 4px; }
-  .summary {
-    background: white;
-    border-radius: 10px;
-    padding: 16px;
-    margin-top: 16px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-  }
-  .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
-  .summary-row.total { font-weight: bold; font-size: 17px; color: #2b1f4d; border-top: 1px solid #eee; padding-top: 8px; }
-  .min-warning {
-    background: #fff3cd;
-    color: #856404;
-    padding: 10px;
-    border-radius: 8px;
-    font-size: 13px;
-    margin-top: 10px;
-    text-align: center;
-  }
-  .checkout-btn {
-    display: block;
-    width: 100%;
-    padding: 14px;
-    margin-top: 14px;
-    background: #2b1f4d;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 15px;
-    text-align: center;
-    text-decoration: none;
-    cursor: pointer;
-  }
-  .checkout-btn.disabled { background: #ccc; pointer-events: none; }
-  .empty { text-align: center; padding: 60px 20px; color: #888; }
-  .empty a { color: #2b1f4d; font-weight: bold; }
+:root{
+  --bg:#FBF9F4;--surface:#ffffff;--text:#241F17;--muted:#79705F;--border:#E7E0D0;
+  --primary:#A9822A;--secondary:#B9975B;
+  --n100:#F7F3E9;--n300:#E2D9C3;
+  --success:#2E7D32;--warning:#0E7C86;--error:#DC2626;
+  --r-sm:4px;--r-md:8px;--r-lg:12px;--r-xl:20px;
+  --sh-sm:0 1px 2px rgba(16,24,40,.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color: var(--text); }
+.en { font-family: 'Inter', sans-serif; direction: ltr; unicode-bidi: isolate; }
+
+.site-header {
+  background: var(--primary);
+  color: #fff;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.site-header .wordmark { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 1.1rem; letter-spacing: 1.5px; }
+.site-header a.back { color: #fff; text-decoration: none; font-size: 0.85rem; opacity: 0.9; }
+
+.container { padding: 16px; max-width: 500px; margin: 0 auto; }
+.item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 12px;
+  margin-bottom: 12px;
+  display: flex;
+  gap: 12px;
+  box-shadow: var(--sh-sm);
+}
+.item img { width: 70px; height: 70px; border-radius: var(--r-md); object-fit: cover; background: var(--n100); }
+.item-info { flex: 1; }
+.item-info h3 { font-size: 0.95rem; margin-bottom: 4px; font-weight: 700; }
+.item-info .meta { font-size: 0.78rem; color: var(--muted); margin-bottom: 8px; }
+.qty-row { display: flex; align-items: center; gap: 10px; }
+.qty-row input {
+  width: 55px; padding: 6px; border: 1.5px solid var(--border);
+  border-radius: var(--r-md); text-align: center; font-family: 'Inter';
+}
+.line-total { font-weight: 800; color: var(--primary); font-size: 0.9rem; font-family: 'Inter'; }
+.remove-btn { background: none; border: none; color: var(--error); font-size: 0.78rem; cursor: pointer; margin-top: 6px; font-family: 'Tajawal'; }
+
+.summary {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 18px;
+  margin-top: 18px;
+  box-shadow: var(--sh-sm);
+}
+.summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; }
+.summary-row.total {
+  font-weight: 800; font-size: 1.05rem; color: var(--primary);
+  border-top: 1px solid var(--border); padding-top: 10px;
+}
+.min-warning {
+  background: #E1F1F2;
+  color: var(--warning);
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  font-size: 0.82rem;
+  margin-top: 12px;
+  text-align: center;
+  font-weight: 700;
+}
+.checkout-btn {
+  display: block;
+  width: 100%;
+  padding: 13px;
+  margin-top: 14px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-md);
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: 'Tajawal';
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+.checkout-btn.disabled { background: var(--n300); color: var(--surface); pointer-events: none; }
+.empty { text-align: center; padding: 70px 20px; color: var(--muted); }
+.empty a { color: var(--primary); font-weight: 700; text-decoration: none; }
 </style>
 </head>
 <body>
 
-<header>
-  <span>السلة</span>
-  <a href="index.html">← رجوع للمنتجات</a>
+<header class="site-header">
+  <span class="wordmark en">CRYSTAL</span>
+  <a href="index.html" class="back">← رجوع للمنتجات</a>
 </header>
 
-<div class="container" id="container">
-  <!-- يتعبى بالجافاسكربت -->
-</div>
+<div class="container" id="container"></div>
 
 <script>
   const CART_KEY = "crystal_cart";
   const MIN_ORDER = 300;
 
   function getCart() {
-    try {
-      return JSON.parse(localStorage.getItem(CART_KEY)) || [];
-    } catch {
-      return [];
-    }
+    try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
+    catch { return []; }
   }
 
   function saveCart(cart) {
@@ -140,11 +161,11 @@
           <img src="${item.image}" alt="${item.name}">
           <div class="item-info">
             <h3>${item.name}</h3>
-            <div class="meta">${item.color ? "اللون: " + item.color + " — " : ""}${item.price} د.ل / ${unitLabel}</div>
+            <div class="meta">${item.color ? "اللون: " + item.color + " — " : ""}<span class="en">${item.price}</span> د.ل / ${unitLabel}</div>
             <div class="qty-row">
               <span>الكمية:</span>
               <input type="number" min="1" value="${item.quantity}" onchange="updateQty(${index}, this.value)">
-              <span class="line-total">${lineTotal.toFixed(2)} د.ل</span>
+              <span class="line-total en">${lineTotal.toFixed(2)} د.ل</span>
             </div>
             <button class="remove-btn" onclick="removeItem(${index})">حذف</button>
           </div>
@@ -159,7 +180,7 @@
       <div class="summary">
         <div class="summary-row total">
           <span>إجمالي المنتجات</span>
-          <span>${subtotal.toFixed(2)} د.ل</span>
+          <span class="en">${subtotal.toFixed(2)} د.ل</span>
         </div>
         ${belowMin ? `<div class="min-warning">أضيفي ${remaining} د.ل أخرى من المنتجات لإكمال الحد الأدنى للطلب (300 د.ل).</div>` : ""}
         <a href="checkout.html" class="checkout-btn ${belowMin ? 'disabled' : ''}">
