@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إضافة منتج | كرستال</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Tahoma, Arial, sans-serif; background: #f8f7fb; color: #222; }
+  header { background: #2b1f4d; color: white; padding: 16px; text-align: center; font-size: 20px; }
+  .form-box {
+    max-width: 420px;
+    margin: 20px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+  }
+  label { display: block; margin: 12px 0 6px; font-size: 14px; color: #444; }
+  input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+  button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 18px;
+    background: #2b1f4d;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  button:disabled { opacity: 0.6; }
+  .msg { text-align: center; margin-top: 12px; font-size: 14px; }
+  .msg.ok { color: #1a7a3c; }
+  .msg.err { color: #c0392b; }
+  .checking { text-align: center; padding: 40px; color: #888; }
+</style>
+</head>
+<body>
+
+<header>إضافة منتج جديد</header>
+
+<div class="checking" id="checking">جاري التحقق من صلاحيتك...</div>
+
+<div class="form-box" id="formBox" style="display:none;">
+  <label>اسم المنتج</label>
+  <input type="text" id="name" placeholder="مثلا: مشط">
+
+  <label>السعر (د.ل)</label>
+  <input type="number" id="price" placeholder="60">
+
+  <label>وحدة البيع</label>
+  <select id="saleUnit">
+    <option value="piece">قطعة</option>
+    <option value="dozen">دستة</option>
+  </select>
+
+  <label>صورة المنتج</label>
+  <input type="file" id="imageFile" accept="image/*">
+
+  <button id="saveBtn" onclick="saveProduct()">حفظ المنتج</button>
+  <div class="msg" id="msg"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://ptahgriuztxqsegkueln.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // تحقق: هل فيه جلسة دخول فعلا؟ لو لا، ارجعيها لصفحة الدخول
+  async function checkAuth() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) {
+      window.location.href = "admin-login.html";
+      return;
+    }
+    document.getElementById("checking").style.display = "none";
+    document.getElementById("formBox").style.display = "block";
+  }
+  checkAuth();
+
+  async function saveProduct() {
+    const name = document.getElementById("name").value.trim();
+    const price = parseFloat(document.getElementById("price").value);
+    const saleUnit = document.getElementById("saleUnit").value;
+    const file = document.getElementById("imageFile").files[0];
+    const msg = document.getElementById("msg");
+    const btn = document.getElementById("saveBtn");
+
+    if (!name || !price || !file) {
+      msg.textContent = "املي الاسم والسعر واختاري صورة";
+      msg.className = "msg err";
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "جاري الحفظ...";
+    msg.textContent = "";
+
+    // 1. إنشاء المنتج في جدول products
+    const { data: product, error: productError } = await supabaseClient
+      .from("products")
+      .insert({ name, price, sale_unit: saleUnit, active: true })
+      .select()
+      .single();
+
+    if (productError) {
+      msg.textContent = "خطأ بالمنتج: " + productError.message;
+      msg.className = "msg err";
+      btn.disabled = false;
+      btn.textContent = "حفظ المنتج";
+      return;
+    }
+
+    // 2. رفع الصورة لـ Storage
+    const fileExt = file.name.split('.').pop();
+    const filePath = `${product.id}-${Date.now()}.${fileExt}`;
+
+    const { error: uploadError } = await supabaseClient.storage
+      .from("product-images")
+      .upload(filePath, file);
+
+    if (uploadError) {
+      msg.textContent = "تم حفظ المنتج لكن صار خطأ بالصورة: " + uploadError.message;
+      msg.className = "msg err";
+      btn.disabled = false;
+      btn.textContent = "حفظ المنتج";
+      return;
+    }
+
+    // 3. جلب الرابط العام للصورة
+    const { data: urlData } = supabaseClient.storage
+      .from("product-images")
+      .getPublicUrl(filePath);
+
+    // 4. ربط الصورة بالمنتج في جدول product_images
+    const { error: imageError } = await supabaseClient
+      .from("product_images")
+      .insert({ product_id: product.id, image_url: urlData.publicUrl, sort_order: 0 });
+
+    if (imageError) {
+      msg.textContent = "تم حفظ المنتج لكن صار خطأ بربط الصورة: " + imageError.message;
+      msg.className = "msg err";
+      btn.disabled = false;
+      btn.textContent = "حفظ المنتج";
+      return;
+    }
+
+    msg.textContent = "تم حفظ المنتج بنجاح!";
+    msg.className = "msg ok";
+    document.getElementById("name").value = "";
+    document.getElementById("price").value = "";
+    document.getElementById("imageFile").value = "";
+    btn.disabled = false;
+    btn.textContent = "حفظ المنتج";
+  }
+</script>
+
+</body>
+</html>
