@@ -4,42 +4,51 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>إضافة منتج | كرستال</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Tahoma, Arial, sans-serif; background: #f8f7fb; color: #222; }
-  header { background: #2b1f4d; color: white; padding: 16px; text-align: center; font-size: 20px; }
-  .form-box {
-    max-width: 420px;
-    margin: 20px auto;
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
-  }
-  label { display: block; margin: 12px 0 6px; font-size: 14px; color: #444; }
-  input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
-  .hint { font-size: 12px; color: #999; margin-top: 4px; }
-  button {
-    width: 100%;
-    padding: 12px;
-    margin-top: 18px;
-    background: #2b1f4d;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 15px;
-    cursor: pointer;
-  }
-  button:disabled { opacity: 0.6; }
-  .msg { text-align: center; margin-top: 12px; font-size: 14px; }
-  .msg.ok { color: #1a7a3c; }
-  .msg.err { color: #c0392b; }
-  .checking { text-align: center; padding: 40px; color: #888; }
+:root{
+  --bg:#FBF9F4;--surface:#ffffff;--text:#241F17;--muted:#79705F;--border:#E7E0D0;
+  --primary:#A9822A;--n100:#F7F3E9;--success:#2E7D32;--error:#DC2626;
+  --r-md:8px;--r-lg:12px;--sh-sm:0 1px 2px rgba(16,24,40,.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color: var(--text); }
+.site-header { background: var(--primary); color: #fff; padding: 16px; text-align: center; }
+.site-header .wordmark { font-family: 'Inter'; font-weight: 800; letter-spacing: 1.5px; font-size: 1.1rem; }
+.site-header .page-title { font-size: 0.8rem; color: #F2E6C8; margin-top: 2px; }
+
+.form-box {
+  max-width: 420px; margin: 20px auto; background: var(--surface);
+  border: 1px solid var(--border); padding: 22px; border-radius: var(--r-lg);
+  box-shadow: var(--sh-sm);
+}
+label { display: block; margin: 12px 0 6px; font-size: 0.8rem; color: var(--muted); }
+input, select {
+  width: 100%; padding: 10px; border: 1.5px solid var(--border);
+  border-radius: var(--r-md); font-size: 0.88rem; font-family: 'Tajawal';
+  background: var(--surface); color: var(--text);
+}
+input:focus, select:focus { outline: none; border-color: var(--primary); }
+.hint { font-size: 0.72rem; color: var(--muted); margin-top: 4px; }
+button {
+  width: 100%; padding: 13px; margin-top: 18px; background: var(--primary);
+  color: #fff; border: none; border-radius: var(--r-md); font-size: 0.92rem;
+  font-weight: 700; font-family: 'Tajawal'; cursor: pointer;
+}
+button:disabled { opacity: 0.6; }
+.msg { text-align: center; margin-top: 12px; font-size: 0.85rem; font-weight: 700; }
+.msg.ok { color: var(--success); }
+.msg.err { color: var(--error); }
+.checking { text-align: center; padding: 50px 20px; color: var(--muted); }
 </style>
 </head>
 <body>
 
-<header>إضافة منتج جديد</header>
+<header class="site-header">
+  <div class="wordmark">CRYSTAL</div>
+  <div class="page-title">إضافة منتج جديد</div>
+</header>
 
 <div class="checking" id="checking">جاري التحقق من صلاحيتك...</div>
 
@@ -58,7 +67,7 @@
 
   <label>الألوان (اختياري)</label>
   <input type="text" id="colors" placeholder="ذهبي، فضي، أزرق">
-  <div class="hint">افصلي بين كل لون وآخر بفاصلة. اتركيه فاضي لو المنتج بلا ألوان.</div>
+  <div class="hint">افصل بين كل لون وآخر بفاصلة. خليه فاضي لو المنتج بلا ألوان.</div>
 
   <label>صورة المنتج</label>
   <input type="file" id="imageFile" accept="image/*">
@@ -94,7 +103,7 @@
     const btn = document.getElementById("saveBtn");
 
     if (!name || !price || !file) {
-      msg.textContent = "املي الاسم والسعر واختاري صورة";
+      msg.textContent = "املي الاسم والسعر واختار صورة";
       msg.className = "msg err";
       return;
     }
@@ -148,24 +157,13 @@
       return;
     }
 
-    // معالجة الألوان لو اتكتبت
     if (colorsRaw) {
-      const colorNames = colorsRaw
-        .split(/[,،]/)
-        .map(c => c.trim())
-        .filter(c => c.length > 0);
-
+      const colorNames = colorsRaw.split(/[,،]/).map(c => c.trim()).filter(c => c.length > 0);
       if (colorNames.length > 0) {
         const colorRows = colorNames.map(colorName => ({
-          product_id: product.id,
-          color_name: colorName,
-          active: true
+          product_id: product.id, color_name: colorName, active: true
         }));
-
-        const { error: colorsError } = await supabaseClient
-          .from("product_colors")
-          .insert(colorRows);
-
+        const { error: colorsError } = await supabaseClient.from("product_colors").insert(colorRows);
         if (colorsError) {
           msg.textContent = "تم حفظ المنتج والصورة، لكن صار خطأ بالألوان: " + colorsError.message;
           msg.className = "msg err";
