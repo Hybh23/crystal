@@ -9,8 +9,7 @@
 <style>
 :root{
   --bg:#FBF9F4;--surface:#ffffff;--text:#241F17;--muted:#79705F;--border:#E7E0D0;
-  --primary:#A9822A;--secondary:#B9975B;
-  --n100:#F7F3E9;--n300:#E2D9C3;
+  --primary:#A9822A;--secondary:#B9975B;--n100:#F7F3E9;--n300:#E2D9C3;
   --success:#2E7D32;--warning:#0E7C86;--error:#DC2626;
   --r-sm:4px;--r-md:8px;--r-lg:12px;--r-xl:20px;
   --sh-sm:0 1px 2px rgba(16,24,40,.06);
@@ -19,92 +18,74 @@
 body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color: var(--text); }
 .en { font-family: 'Inter', sans-serif; direction: ltr; unicode-bidi: isolate; }
 
+.sticky-top { position: sticky; top: 0; z-index: 100; }
+
 .site-header {
-  background: var(--primary);
-  color: #fff;
-  padding: 16px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  background: var(--primary); color: #fff; padding: 14px 18px;
+  display: flex; justify-content: space-between; align-items: center;
 }
-.brand { display: flex; flex-direction: column; }
-.wordmark { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 1.4rem; letter-spacing: 2px; }
-.tagline { font-size: 0.72rem; color: #F2E6C8; margin-top: 2px; }
+.brand { display: flex; align-items: center; gap: 8px; }
+.logo-icon { width: 22px; height: 22px; }
+.wordmark { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 1.25rem; letter-spacing: 2px; }
 .cart-badge {
-  background: #fff;
-  color: var(--primary);
-  padding: 6px 14px;
-  border-radius: 999px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  text-decoration: none;
+  background: #fff; color: var(--primary); padding: 6px 14px;
+  border-radius: 999px; font-size: 0.82rem; font-weight: 700; text-decoration: none;
 }
 
+.category-bar {
+  display: flex; gap: 8px; overflow-x: auto; padding: 10px 14px;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  -ms-overflow-style: none; scrollbar-width: none;
+}
+.category-bar::-webkit-scrollbar { display: none; }
+.chip {
+  flex-shrink: 0; padding: 7px 15px; border-radius: 999px; font-size: 0.78rem;
+  font-family: 'Tajawal'; background: var(--n100); color: var(--muted);
+  border: none; cursor: pointer; white-space: nowrap;
+}
+.chip.active { background: var(--primary); color: #fff; font-weight: 700; }
+
 .grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 14px;
-  padding: 16px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px; padding: 14px;
 }
 .card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  overflow: hidden;
-  box-shadow: var(--sh-sm);
-  display: flex;
-  flex-direction: column;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+  overflow: hidden; box-shadow: var(--sh-sm); display: flex; flex-direction: column;
+  text-decoration: none; color: var(--text); position: relative;
 }
-.card img { width: 100%; height: 140px; object-fit: cover; background: var(--n100); }
-.card-body { padding: 12px; flex: 1; display: flex; flex-direction: column; }
-.card-body h3 { font-size: 0.95rem; margin-bottom: 4px; font-weight: 700; }
-.price { color: var(--primary); font-weight: 800; font-size: 1rem; }
-.unit { color: var(--muted); font-size: 0.78rem; font-family: 'Tajawal'; }
-.field { margin-top: 8px; }
-.field label { font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 3px; }
-.field select, .field input {
-  width: 100%;
-  padding: 8px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--r-md);
-  font-size: 0.85rem;
-  font-family: 'Tajawal';
-  background: var(--surface);
-  color: var(--text);
+.card img { width: 100%; height: 130px; object-fit: cover; background: var(--n100); }
+.trend-tag {
+  position: absolute; top: 8px; right: 8px; background: var(--primary); color: #fff;
+  font-size: 0.65rem; font-weight: 700; padding: 3px 9px; border-radius: 999px;
 }
-.add-btn {
-  margin-top: 10px;
-  padding: 9px;
-  background: var(--primary);
-  color: #fff;
-  border: none;
-  border-radius: var(--r-md);
-  font-size: 0.85rem;
-  font-family: 'Tajawal';
-  font-weight: 700;
-  cursor: pointer;
+.low-tag {
+  position: absolute; top: 8px; left: 8px; background: var(--warning); color: #fff;
+  font-size: 0.6rem; font-weight: 700; padding: 3px 8px; border-radius: 999px;
 }
-.add-btn:active { opacity: 0.85; }
-.added-msg {
-  font-size: 0.78rem;
-  color: var(--success);
-  text-align: center;
-  margin-top: 6px;
-  display: none;
-  font-weight: 700;
-}
-.loading, .empty { text-align: center; padding: 50px 20px; color: var(--muted); }
+.card-body { padding: 10px; flex: 1; display: flex; flex-direction: column; }
+.card-body h3 { font-size: 0.88rem; margin-bottom: 4px; font-weight: 700; }
+.price { color: var(--primary); font-weight: 800; font-size: 0.92rem; margin-top: auto; }
+.unit { color: var(--muted); font-size: 0.72rem; }
+.loading, .empty { text-align: center; padding: 50px 20px; color: var(--muted); grid-column: 1/-1; }
 </style>
 </head>
 <body>
 
-<header class="site-header">
-  <div class="brand">
-    <span class="wordmark en">CRYSTAL</span>
-    <span class="tagline">للإكسسوارات بالجملة</span>
-  </div>
-  <a href="cart.html" class="cart-badge" id="cartBadge">السلة (0)</a>
-</header>
+<div class="sticky-top">
+  <header class="site-header">
+    <div class="brand">
+      <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 3h12l3 5-9 13L3 8z"/>
+        <path d="M3 8h18"/>
+        <path d="M9 3l-2 5 5 13 5-13-2-5"/>
+      </svg>
+      <span class="wordmark en">CRYSTAL</span>
+    </div>
+    <a href="cart.html" class="cart-badge" id="cartBadge">السلة (0)</a>
+  </header>
+  <div class="category-bar" id="categoryBar"></div>
+</div>
 
 <div id="productsGrid" class="grid">
   <div class="loading">جاري تحميل المنتجات...</div>
@@ -117,15 +98,12 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   const CART_KEY = "crystal_cart";
+  let allProducts = [];
+  let currentFilter = "all";
 
   function getCart() {
     try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
     catch { return []; }
-  }
-
-  function saveCart(cart) {
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
-    updateCartBadge();
   }
 
   function updateCartBadge() {
@@ -134,117 +112,87 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
     document.getElementById("cartBadge").textContent = `السلة (${totalItems})`;
   }
 
-  function addToCart(product, colorName, quantity) {
-    const cart = getCart();
-    const existing = cart.find(item => item.product_id === product.id && item.color === (colorName || null));
+  async function init() {
+    updateCartBadge();
 
-    if (existing) {
-      existing.quantity += quantity;
-    } else {
-      cart.push({
-        product_id: product.id,
-        name: product.name,
-        price: product.price,
-        sale_unit: product.sale_unit,
-        color: colorName || null,
-        quantity: quantity,
-        image: product.image
-      });
-    }
-    saveCart(cart);
-  }
-
-  async function loadProducts() {
-    const grid = document.getElementById("productsGrid");
+    const { data: categories } = await supabaseClient
+      .from("categories")
+      .select("id, name")
+      .eq("active", true)
+      .order("sort_order");
 
     const { data: products, error } = await supabaseClient
       .from("products")
       .select(`
-        id, name, price, sale_unit,
-        product_images ( image_url, sort_order ),
-        product_colors ( color_name, active )
+        id, name, price, sale_unit, is_trending, low_stock, category_id,
+        product_images ( image_url, sort_order )
       `)
       .eq("active", true)
       .order("created_at", { ascending: false });
 
     if (error) {
-      grid.innerHTML = `<div class="empty">صار خطأ: ${error.message}</div>`;
-      console.error(error);
+      document.getElementById("productsGrid").innerHTML = `<div class="empty">صار خطأ: ${error.message}</div>`;
       return;
     }
 
-    if (!products || products.length === 0) {
-      grid.innerHTML = `<div class="empty">لا توجد منتجات حاليًا</div>`;
+    allProducts = products || [];
+    renderChips(categories || []);
+    renderGrid();
+  }
+
+  function renderChips(categories) {
+    const bar = document.getElementById("categoryBar");
+    const chips = [
+      { key: "all", label: "الكل" },
+      { key: "trending", label: "ترند" },
+      ...categories.map(c => ({ key: c.id, label: c.name }))
+    ];
+
+    bar.innerHTML = chips.map(c =>
+      `<button class="chip ${c.key === currentFilter ? 'active' : ''}" onclick="setFilter('${c.key}')">${c.label}</button>`
+    ).join("");
+  }
+
+  function setFilter(key) {
+    currentFilter = key;
+    document.querySelectorAll(".chip").forEach(chip => chip.classList.remove("active"));
+    event.target.classList.add("active");
+    renderGrid();
+  }
+
+  function renderGrid() {
+    const grid = document.getElementById("productsGrid");
+
+    let filtered;
+    if (currentFilter === "all") filtered = allProducts;
+    else if (currentFilter === "trending") filtered = allProducts.filter(p => p.is_trending);
+    else filtered = allProducts.filter(p => p.category_id === currentFilter);
+
+    if (filtered.length === 0) {
+      grid.innerHTML = `<div class="empty">لا توجد منتجات في هذا القسم حاليًا</div>`;
       return;
     }
 
-    grid.innerHTML = products.map((p, index) => {
+    grid.innerHTML = filtered.map(p => {
       const images = (p.product_images || []).sort((a,b) => a.sort_order - b.sort_order);
       const img = images[0]?.image_url || "https://via.placeholder.com/300x300?text=No+Image";
       const unitLabel = p.sale_unit === "dozen" ? "دستة" : "قطعة";
-      const activeColors = (p.product_colors || []).filter(c => c.active);
-      const hasColors = activeColors.length > 0;
-
-      const colorOptions = hasColors
-        ? `<option value="">اختار لون</option>` + activeColors.map(c => `<option value="${c.color_name}">${c.color_name}</option>`).join("")
-        : "";
 
       return `
-        <div class="card">
+        <a href="product.html?id=${p.id}" class="card">
+          ${p.is_trending ? `<span class="trend-tag">ترند</span>` : ""}
+          ${p.low_stock ? `<span class="low-tag">آخر القطع</span>` : ""}
           <img src="${img}" alt="${p.name}">
           <div class="card-body">
             <h3>${p.name}</h3>
             <div class="price"><span class="en">${p.price}</span> د.ل <span class="unit">/ ${unitLabel}</span></div>
-
-            ${hasColors ? `
-            <div class="field">
-              <label>اللون</label>
-              <select id="color-${index}">${colorOptions}</select>
-            </div>` : ""}
-
-            <div class="field">
-              <label>الكمية (بال${unitLabel})</label>
-              <input type="number" id="qty-${index}" value="1" min="1">
-            </div>
-
-            <button class="add-btn" onclick='handleAdd(${index}, ${JSON.stringify({id: p.id, name: p.name, price: p.price, sale_unit: p.sale_unit, image: img, hasColors: hasColors})})'>
-              أضف للسلة
-            </button>
-            <div class="added-msg" id="msg-${index}">تمت الإضافة ✓</div>
           </div>
-        </div>
+        </a>
       `;
     }).join("");
   }
 
-  function handleAdd(index, product) {
-    const qtyInput = document.getElementById(`qty-${index}`);
-    const quantity = parseInt(qtyInput.value);
-
-    if (!quantity || quantity < 1) {
-      alert("حدد كمية صحيحة");
-      return;
-    }
-
-    let colorName = null;
-    if (product.hasColors) {
-      const colorSelect = document.getElementById(`color-${index}`);
-      colorName = colorSelect.value;
-      if (!colorName) {
-        alert("لازم تختار لون قبل");
-        return;
-      }
-    }
-
-    addToCart(product, colorName, quantity);
-
-    const msg = document.getElementById(`msg-${index}`);
-    msg.style.display = "block";
-    setTimeout(() => { msg.style.display = "none"; }, 1500);
-  }
-
-  updateCartBadge();
-  loadProducts();
+  init();
 </script>
 
 </body>
