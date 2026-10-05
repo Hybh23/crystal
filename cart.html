@@ -20,46 +20,39 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
 .en { font-family: 'Inter', sans-serif; direction: ltr; unicode-bidi: isolate; }
 
 .site-header {
-  background: var(--primary);
-  color: #fff;
-  padding: 16px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  background: var(--primary); color: #fff; padding: 16px 20px;
+  display: flex; justify-content: space-between; align-items: center;
 }
 .site-header .wordmark { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 1.1rem; letter-spacing: 1.5px; }
 .site-header a.back { color: #fff; text-decoration: none; font-size: 0.85rem; opacity: 0.9; }
 
 .container { padding: 16px; max-width: 500px; margin: 0 auto; }
 .item {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  padding: 12px;
-  margin-bottom: 12px;
-  display: flex;
-  gap: 12px;
-  box-shadow: var(--sh-sm);
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+  padding: 12px; margin-bottom: 12px; display: flex; gap: 12px; box-shadow: var(--sh-sm);
 }
 .item img { width: 70px; height: 70px; border-radius: var(--r-md); object-fit: cover; background: var(--n100); }
 .item-info { flex: 1; }
 .item-info h3 { font-size: 0.95rem; margin-bottom: 4px; font-weight: 700; }
 .item-info .meta { font-size: 0.78rem; color: var(--muted); margin-bottom: 8px; }
-.qty-row { display: flex; align-items: center; gap: 10px; }
-.qty-row input {
-  width: 55px; padding: 6px; border: 1.5px solid var(--border);
-  border-radius: var(--r-md); text-align: center; font-family: 'Inter';
+.qty-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+
+.qty-stepper { display: flex; align-items: center; border: 1.5px solid var(--border); border-radius: var(--r-md); overflow: hidden; }
+.qty-stepper button {
+  width: 32px; height: 32px; background: var(--n100); border: none;
+  font-size: 1rem; font-family: 'Inter'; color: var(--primary); cursor: pointer;
 }
+.qty-stepper input {
+  width: 42px; text-align: center; border: none; font-family: 'Inter'; font-size: 0.85rem; padding: 6px 0;
+}
+.qty-stepper input::-webkit-outer-spin-button, .qty-stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
 .line-total { font-weight: 800; color: var(--primary); font-size: 0.9rem; font-family: 'Inter'; }
 .remove-btn { background: none; border: none; color: var(--error); font-size: 0.78rem; cursor: pointer; margin-top: 6px; font-family: 'Tajawal'; }
 
 .summary {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  padding: 18px;
-  margin-top: 18px;
-  box-shadow: var(--sh-sm);
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+  padding: 18px; margin-top: 18px; box-shadow: var(--sh-sm);
 }
 .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; }
 .summary-row.total {
@@ -67,30 +60,14 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
   border-top: 1px solid var(--border); padding-top: 10px;
 }
 .min-warning {
-  background: #E1F1F2;
-  color: var(--warning);
-  padding: 10px 12px;
-  border-radius: var(--r-md);
-  font-size: 0.82rem;
-  margin-top: 12px;
-  text-align: center;
-  font-weight: 700;
+  background: #E1F1F2; color: var(--warning); padding: 10px 12px;
+  border-radius: var(--r-md); font-size: 0.82rem; margin-top: 12px; text-align: center; font-weight: 700;
 }
 .checkout-btn {
-  display: block;
-  width: 100%;
-  padding: 13px;
-  margin-top: 14px;
-  background: var(--primary);
-  color: #fff;
-  border: none;
-  border-radius: var(--r-md);
-  font-size: 0.95rem;
-  font-weight: 700;
-  font-family: 'Tajawal';
-  text-align: center;
-  text-decoration: none;
-  cursor: pointer;
+  display: block; width: 100%; padding: 13px; margin-top: 14px;
+  background: var(--primary); color: #fff; border: none; border-radius: var(--r-md);
+  font-size: 0.95rem; font-weight: 700; font-family: 'Tajawal';
+  text-align: center; text-decoration: none; cursor: pointer;
 }
 .checkout-btn.disabled { background: var(--n300); color: var(--surface); pointer-events: none; }
 .empty { text-align: center; padding: 70px 20px; color: var(--muted); }
@@ -135,6 +112,13 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
     saveCart(cart);
   }
 
+  function stepQty(index, delta) {
+    const cart = getCart();
+    let newQty = cart[index].quantity + delta;
+    if (newQty < 1) newQty = 1;
+    updateQty(index, newQty);
+  }
+
   function render() {
     const cart = getCart();
     const container = document.getElementById("container");
@@ -143,7 +127,7 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
       container.innerHTML = `
         <div class="empty">
           السلة فاضية حاليًا.<br><br>
-          <a href="index.html">تصفح المنتجات</a>
+          <a href="index.html">تصفحي المنتجات</a>
         </div>
       `;
       return;
@@ -163,8 +147,11 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
             <h3>${item.name}</h3>
             <div class="meta">${item.color ? "اللون: " + item.color + " — " : ""}<span class="en">${item.price}</span> د.ل / ${unitLabel}</div>
             <div class="qty-row">
-              <span>الكمية:</span>
-              <input type="number" min="1" value="${item.quantity}" onchange="updateQty(${index}, this.value)">
+              <div class="qty-stepper">
+                <button type="button" onclick="stepQty(${index}, -1)">−</button>
+                <input type="number" min="1" value="${item.quantity}" id="qty-${index}" onchange="updateQty(${index}, this.value)">
+                <button type="button" onclick="stepQty(${index}, 1)">+</button>
+              </div>
               <span class="line-total en">${lineTotal.toFixed(2)} د.ل</span>
             </div>
             <button class="remove-btn" onclick="removeItem(${index})">حذف</button>
@@ -182,9 +169,9 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
           <span>إجمالي المنتجات</span>
           <span class="en">${subtotal.toFixed(2)} د.ل</span>
         </div>
-        ${belowMin ? `<div class="min-warning">أضيف ${remaining} د.ل أخرى من المنتجات لإكمال الحد الأدنى للطلب (300 د.ل).</div>` : ""}
+        ${belowMin ? `<div class="min-warning">أضيفي ${remaining} د.ل أخرى من المنتجات لإكمال الحد الأدنى للطلب (300 د.ل).</div>` : ""}
         <a href="checkout.html" class="checkout-btn ${belowMin ? 'disabled' : ''}">
-          ${belowMin ? "أكمل الحد الأدنى أول" : "متابعة الطلب"}
+          ${belowMin ? "أكملي الحد الأدنى أول" : "متابعة الطلب"}
         </a>
       </div>
     `;
