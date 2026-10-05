@@ -75,7 +75,7 @@ button:disabled { opacity: 0.6; }
   <input type="text" id="description" placeholder="وصف قصير للمنتج">
   <label>الألوان (اختياري)</label>
   <input type="text" id="colors" placeholder="ذهبي، فضي، أزرق">
-  <div class="hint">افصلي بين كل لون وآخر بفاصلة. اتركيه فاضي لو المنتج بلا ألوان.</div>
+  <div class="hint">افصل بين كل لون وآخر بفاصلة. خليه فاضي لو المنتج بلا ألوان.</div>
 
   <label>صورة المنتج</label>
   <input type="file" id="imageFile" accept="image/*">
@@ -129,7 +129,7 @@ button:disabled { opacity: 0.6; }
     const btn = document.getElementById("saveBtn");
 
     if (!name || !price || !file || !categoryId) {
-      msg.textContent = "املي الاسم والقسم والسعر واختاري صورة";
+      msg.textContent = "املي الاسم والقسم والسعر واختار صورة";
       msg.className = "msg err";
       return;
     }
