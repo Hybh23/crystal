@@ -111,24 +111,31 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
     await OneSignal.init({ appId: "c8318950-edb6-4899-bc3b-19189079f1d0" });
-    updateNotifStatus(OneSignal);
+
+    const refreshStatus = () => {
+      const status = document.getElementById("notifStatus");
+      const btn = document.getElementById("notifBtn");
+      if (OneSignal.Notifications.permission) {
+        status.textContent = "التنبيهات مفعّلة ✓";
+        status.className = "notif-status on";
+        btn.style.display = "none";
+      } else {
+        status.textContent = "";
+        btn.style.display = "inline-block";
+      }
+    };
+
+    OneSignal.Notifications.addEventListener("permissionChange", refreshStatus);
+    refreshStatus();
+
+    window._enableNotif = async () => {
+      await OneSignal.Notifications.requestPermission();
+      refreshStatus();
+    };
   });
 
-  function updateNotifStatus(OneSignal) {
-    const status = document.getElementById("notifStatus");
-    const btn = document.getElementById("notifBtn");
-    if (OneSignal.Notifications.permission) {
-      status.textContent = "التنبيهات مفعّلة ✓";
-      status.className = "notif-status on";
-      btn.style.display = "none";
-    }
-  }
-
-  async function enableNotifications() {
-    OneSignalDeferred.push(async function(OneSignal) {
-      await OneSignal.Notifications.requestPermission();
-      updateNotifStatus(OneSignal);
-    });
+  function enableNotifications() {
+    if (window._enableNotif) window._enableNotif();
   }
 
   async function checkAuth() {
