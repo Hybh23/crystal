@@ -70,7 +70,9 @@ button:disabled { opacity: 0.6; }
     <option value="piece">قطعة</option>
     <option value="dozen">دستة</option>
   </select>
-
+  
+  <label>الوصف (اختياري)</label>
+  <input type="text" id="description" placeholder="وصف قصير للمنتج">
   <label>الألوان (اختياري)</label>
   <input type="text" id="colors" placeholder="ذهبي، فضي، أزرق">
   <div class="hint">افصلي بين كل لون وآخر بفاصلة. اتركيه فاضي لو المنتج بلا ألوان.</div>
@@ -120,6 +122,7 @@ button:disabled { opacity: 0.6; }
     const price = parseFloat(document.getElementById("price").value);
     const saleUnit = document.getElementById("saleUnit").value;
     const colorsRaw = document.getElementById("colors").value.trim();
+    const description = document.getElementById("description").value.trim();
     const isTrending = document.getElementById("isTrending").checked;
     const file = document.getElementById("imageFile").files[0];
     const msg = document.getElementById("msg");
@@ -137,8 +140,7 @@ button:disabled { opacity: 0.6; }
 
     const { data: product, error: productError } = await supabaseClient
       .from("products")
-      .insert({ name, price, sale_unit: saleUnit, active: true, category_id: categoryId, is_trending: isTrending })
-      .select()
+      .insert({ name, price, sale_unit: saleUnit, active: true, category_id: categoryId, is_trending: isTrending, description: description || null })      .select()
       .single();
 
     if (productError) {
