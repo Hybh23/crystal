@@ -40,10 +40,22 @@ h1 { font-size: 1.15rem; margin-bottom: 6px; }
 }
 .field { margin-bottom: 14px; }
 .field label { font-size: 0.8rem; color: var(--muted); display: block; margin-bottom: 6px; }
-.field select, .field input {
+.field select {
   width: 100%; padding: 10px; border: 1.5px solid var(--border);
   border-radius: var(--r-md); font-size: 0.9rem; font-family: 'Tajawal';
 }
+
+.qty-stepper { display: flex; align-items: center; width: fit-content; border: 1.5px solid var(--border); border-radius: var(--r-md); overflow: hidden; }
+.qty-stepper button {
+  width: 40px; height: 40px; background: var(--n100); border: none;
+  font-size: 1.2rem; font-family: 'Inter'; color: var(--primary); cursor: pointer;
+}
+.qty-stepper input {
+  width: 50px; text-align: center; border: none; border-radius: 0;
+  font-family: 'Inter'; font-size: 0.95rem; padding: 10px 0;
+}
+.qty-stepper input::-webkit-outer-spin-button, .qty-stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
 .add-btn {
   width: 100%; padding: 14px; background: var(--primary); color: #fff;
   border: none; border-radius: var(--r-md); font-size: 0.95rem; font-weight: 700;
@@ -134,7 +146,11 @@ h1 { font-size: 1.15rem; margin-bottom: 6px; }
             </div>` : ""}
             <div class="field">
               <label>الكمية (بال${unitLabel})</label>
-              <input type="number" id="qtyInput" value="1" min="1">
+              <div class="qty-stepper">
+                <button type="button" onclick="changeQty(-1)">−</button>
+                <input type="number" id="qtyInput" value="1" min="1">
+                <button type="button" onclick="changeQty(1)">+</button>
+              </div>
             </div>
             <button class="add-btn" onclick="addToCart()">أضف للسلة</button>
             <div class="added-msg" id="addedMsg">تمت الإضافة للسلة ✓</div>
@@ -142,6 +158,13 @@ h1 { font-size: 1.15rem; margin-bottom: 6px; }
         </div>
       </div>
     `;
+  }
+
+  function changeQty(delta) {
+    const input = document.getElementById("qtyInput");
+    let val = parseInt(input.value) || 1;
+    val = Math.max(1, val + delta);
+    input.value = val;
   }
 
   function addToCart() {
