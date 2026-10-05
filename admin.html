@@ -4,12 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>لوحة الإدارة | كرستال</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="كرستال">
+<meta name="theme-color" content="#A9822A">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#FBF9F4;--surface:#ffffff;--text:#241F17;--muted:#79705F;--border:#E7E0D0;
-  --primary:#A9822A;--n100:#F7F3E9;--error:#DC2626;
+  --primary:#A9822A;--n100:#F7F3E9;--error:#DC2626;--success:#2E7D32;
   --r-md:8px;--r-lg:12px;--sh-sm:0 1px 2px rgba(16,24,40,.06);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -24,6 +30,19 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
   padding: 6px 14px; border-radius: 999px; font-size: 0.78rem; font-family: 'Tajawal'; cursor: pointer;
 }
 .container { padding: 18px; max-width: 480px; margin: 0 auto; }
+
+.notif-box {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+  padding: 16px; margin-bottom: 18px; box-shadow: var(--sh-sm); text-align: center;
+}
+.notif-box p { font-size: 0.82rem; color: var(--muted); margin-bottom: 12px; }
+.notif-btn {
+  background: var(--primary); color: #fff; border: none; padding: 11px 20px;
+  border-radius: var(--r-md); font-weight: 700; font-family: 'Tajawal'; font-size: 0.88rem; cursor: pointer;
+}
+.notif-status { font-size: 0.8rem; font-weight: 700; margin-top: 4px; }
+.notif-status.on { color: var(--success); }
+
 .section-title { font-size: 0.85rem; color: var(--muted); margin: 18px 0 10px; }
 .nav-card {
   display: flex; align-items: center; justify-content: space-between;
@@ -48,6 +67,12 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
   </header>
 
   <div class="container">
+    <div class="notif-box" id="notifBox">
+      <p>فعّل التنبيهات عشان توصلك إشعارات فورية بالطلبات الجديدة</p>
+      <button class="notif-btn" id="notifBtn" onclick="enableNotifications()">تفعيل التنبيهات</button>
+      <div class="notif-status" id="notifStatus"></div>
+    </div>
+
     <div class="section-title">الإدارة</div>
 
     <a href="admin-orders.html" class="nav-card">
@@ -76,16 +101,40 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
   </div>
 </div>
 
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   const SUPABASE_URL = "https://ptahgriuztxqsegkueln.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({ appId: "c8318950-edb6-4899-bc3b-19189079f1d0" });
+    updateNotifStatus(OneSignal);
+  });
+
+  function updateNotifStatus(OneSignal) {
+    const status = document.getElementById("notifStatus");
+    const btn = document.getElementById("notifBtn");
+    if (OneSignal.Notifications.permission) {
+      status.textContent = "التنبيهات مفعّلة ✓";
+      status.className = "notif-status on";
+      btn.style.display = "none";
+    }
+  }
+
+  async function enableNotifications() {
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.Notifications.requestPermission();
+      updateNotifStatus(OneSignal);
+    });
+  }
+
   async function checkAuth() {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) {
-      window.location.href = "admin-orders.html";
+      window.location.href = "admin-login.html";
       return;
     }
     document.getElementById("checking").style.display = "none";
