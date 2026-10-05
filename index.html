@@ -21,16 +21,24 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
 .sticky-top { position: sticky; top: 0; z-index: 100; }
 
 .site-header {
-  background: var(--primary); color: #fff; padding: 14px 18px;
-  display: flex; justify-content: space-between; align-items: center;
+  background: var(--primary); color: #fff;
+  padding: 16px 18px 32px;
+  clip-path: polygon(0 0, 100% 0, 100% 86%, 50% 100%, 0 86%);
 }
+.header-top { display: flex; justify-content: space-between; align-items: center; }
 .brand { display: flex; align-items: center; gap: 8px; }
-.logo-icon { width: 22px; height: 22px; }
-.wordmark { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 1.25rem; letter-spacing: 2px; }
+.logo-icon { width: 24px; height: 24px; flex-shrink: 0; }
+.brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+.wordmark { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 1.2rem; letter-spacing: 2px; }
+.brand-ar { font-family: 'Tajawal'; font-weight: 700; font-size: 0.82rem; color: #F2E6C8; margin-top: 1px; }
+.tagline { text-align: center; font-size: 0.7rem; color: #F2E6C8; margin-top: 10px; }
+
 .cart-badge {
-  background: #fff; color: var(--primary); padding: 6px 14px;
+  display: flex; align-items: center; gap: 6px;
+  background: #fff; color: var(--primary); padding: 6px 12px;
   border-radius: 999px; font-size: 0.82rem; font-weight: 700; text-decoration: none;
 }
+.cart-icon { width: 17px; height: 17px; }
 
 .category-bar {
   display: flex; gap: 8px; overflow-x: auto; padding: 10px 14px;
@@ -74,15 +82,27 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
 
 <div class="sticky-top">
   <header class="site-header">
-    <div class="brand">
-      <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M6 3h12l3 5-9 13L3 8z"/>
-        <path d="M3 8h18"/>
-        <path d="M9 3l-2 5 5 13 5-13-2-5"/>
-      </svg>
-      <span class="wordmark en">CRYSTAL</span>
+    <div class="header-top">
+      <div class="brand">
+        <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 3h12l3 5-9 13L3 8z"/>
+          <path d="M3 8h18"/>
+          <path d="M9 3l-2 5 5 13 5-13-2-5"/>
+        </svg>
+        <div class="brand-text">
+          <span class="wordmark en">CRYSTAL</span>
+          <span class="brand-ar">كرستال</span>
+        </div>
+      </div>
+      <a href="cart.html" class="cart-badge" id="cartBadge">
+        <svg class="cart-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/>
+          <path d="M3 4h2l2.4 12.4a2 2 0 002 1.6h8.2a2 2 0 002-1.6L21 8H6"/>
+        </svg>
+        <span id="cartCount">0</span>
+      </a>
     </div>
-    <a href="cart.html" class="cart-badge" id="cartBadge">السلة (0)</a>
+    <div class="tagline">اكسسوارات بالجملة والقطعة</div>
   </header>
   <div class="category-bar" id="categoryBar"></div>
 </div>
@@ -109,7 +129,7 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
   function updateCartBadge() {
     const cart = getCart();
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    document.getElementById("cartBadge").textContent = `السلة (${totalItems})`;
+    document.getElementById("cartCount").textContent = totalItems;
   }
 
   async function init() {
@@ -149,14 +169,14 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
     ];
 
     bar.innerHTML = chips.map(c =>
-      `<button class="chip ${c.key === currentFilter ? 'active' : ''}" onclick="setFilter('${c.key}')">${c.label}</button>`
+      `<button class="chip ${c.key === currentFilter ? 'active' : ''}" onclick="setFilter('${c.key}', this)">${c.label}</button>`
     ).join("");
   }
 
-  function setFilter(key) {
+  function setFilter(key, el) {
     currentFilter = key;
     document.querySelectorAll(".chip").forEach(chip => chip.classList.remove("active"));
-    event.target.classList.add("active");
+    el.classList.add("active");
     renderGrid();
   }
 
