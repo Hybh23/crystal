@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>حسابي | كرستال</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF9F4;--surface:#ffffff;--text:#241F17;--muted:#79705F;--border:#E7E0D0;
+  --primary:#A9822A;--error:#DC2626;--r-md:8px;--r-lg:12px;--sh-sm:0 1px 2px rgba(16,24,40,.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color: var(--text); }
+.en { font-family: 'Inter'; direction: ltr; unicode-bidi: isolate; }
+.site-header { background: var(--primary); color: #fff; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+.wordmark { font-family: 'Inter'; font-weight: 800; letter-spacing: 1.5px; }
+.back-link { color: #fff; text-decoration: none; font-size: 1.2rem; width: 24px; }
+.container { max-width: 400px; margin: 24px auto; padding: 0 16px; }
+.tabs { display: flex; background: var(--surface); border-radius: 999px; padding: 4px; margin-bottom: 18px; border: 1px solid var(--border); }
+.tabs button {
+  flex: 1; padding: 9px; border: none; background: none; border-radius: 999px;
+  font-family: 'Tajawal'; font-size: 0.85rem; color: var(--muted); cursor: pointer;
+}
+.tabs button.active { background: var(--primary); color: #fff; font-weight: 700; }
+.box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px; box-shadow: var(--sh-sm); }
+label { display: block; font-size: 0.78rem; color: var(--muted); margin: 10px 0 5px; }
+input { width: 100%; padding: 10px; border: 1.5px solid var(--border); border-radius: var(--r-md); font-size: 0.88rem; font-family: 'Tajawal'; }
+input:focus { outline: none; border-color: var(--primary); }
+button.submit {
+  width: 100%; padding: 13px; margin-top: 16px; background: var(--primary); color: #fff;
+  border: none; border-radius: var(--r-md); font-weight: 700; font-family: 'Tajawal'; font-size: 0.9rem; cursor: pointer;
+}
+button.submit:disabled { opacity: 0.6; }
+.err { color: var(--error); font-size: 0.82rem; text-align: center; margin-top: 10px; font-weight: 700; }
+.guest-link { display: block; text-align: center; margin-top: 16px; color: var(--muted); font-size: 0.8rem; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="index.html" class="back-link">→</a>
+  <span class="wordmark">CRYSTAL</span>
+  <span style="width:24px;"></span>
+</header>
+
+<div class="container">
+  <div class="tabs">
+    <button id="loginTab" class="active" onclick="switchTab('login')">دخول</button>
+    <button id="signupTab" onclick="switchTab('signup')">حساب جديد</button>
+  </div>
+
+  <div class="box" id="loginBox">
+    <label>البريد الإلكتروني</label>
+    <input type="email" id="loginEmail">
+    <label>كلمة السر</label>
+    <input type="password" id="loginPassword">
+    <button class="submit" id="loginBtn" onclick="login()">دخول</button>
+  </div>
+
+  <div class="box" id="signupBox" style="display:none;">
+    <label>الاسم الكامل</label>
+    <input type="text" id="signupName">
+    <label>رقم الهاتف</label>
+    <input type="tel" id="signupPhone" placeholder="0911234567">
+    <label>البريد الإلكتروني</label>
+    <input type="email" id="signupEmail">
+    <label>كلمة السر</label>
+    <input type="password" id="signupPassword" placeholder="6 أحرف على الأقل">
+    <button class="submit" id="signupBtn" onclick="signup()">إنشاء الحساب</button>
+  </div>
+
+  <div class="err" id="errMsg"></div>
+  <a href="checkout.html" class="guest-link">أو المتابعة كضيف بلا حساب ←</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://ptahgriuztxqsegkueln.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const LY_PHONE_REGEX = /^(?:\+218|00218|0)9[1-5][0-9]{7}$/;
+
+  function switchTab(tab) {
+    document.getElementById("loginTab").classList.toggle("active", tab === "login");
+    document.getElementById("signupTab").classList.toggle("active", tab === "signup");
+    document.getElementById("loginBox").style.display = tab === "login" ? "block" : "none";
+    document.getElementById("signupBox").style.display = tab === "signup" ? "block" : "none";
+    document.getElementById("errMsg").textContent = "";
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const redirectTo = params.get("redirect") || "index.html";
+
+  async function login() {
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+    const err = document.getElementById("errMsg");
+    const btn = document.getElementById("loginBtn");
+
+    if (!email || !password) { err.textContent = "أدخل البريد وكلمة السر"; return; }
+
+    btn.disabled = true;
+    btn.textContent = "جاري الدخول...";
+
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      err.textContent = "خطأ: " + error.message;
+      btn.disabled = false;
+      btn.textContent = "دخول";
+      return;
+    }
+
+    window.location.href = redirectTo;
+  }
+
+  async function signup() {
+    const name = document.getElementById("signupName").value.trim();
+    const phone = document.getElementById("signupPhone").value.trim();
+    const email = document.getElementById("signupEmail").value.trim();
+    const password = document.getElementById("signupPassword").value;
+    const err = document.getElementById("errMsg");
+    const btn = document.getElementById("signupBtn");
+
+    if (!name || !phone || !email || !password) { err.textContent = "املئ كل الحقول"; return; }
+    if (!LY_PHONE_REGEX.test(phone.replace(/[\s-]/g, ""))) { err.textContent = "رقم الهاتف غير صحيح"; return; }
+    if (password.length < 6) { err.textContent = "كلمة السر يجب أن تكون 6 أحرف على الأقل"; return; }
+
+    btn.disabled = true;
+    btn.textContent = "جاري الإنشاء...";
+    err.textContent = "";
+
+    const { data, error } = await supabaseClient.auth.signUp({ email, password });
+
+    if (error) {
+      err.textContent = "خطأ: " + error.message;
+      btn.disabled = false;
+      btn.textContent = "إنشاء الحساب";
+      return;
+    }
+
+    const { error: customerError } = await supabaseClient.from("customers").insert({
+      auth_user_id: data.user.id,
+      name, phone, area: ""
+    });
+
+    if (customerError) {
+      err.textContent = "تم إنشاء الحساب، لكن صار خطأ بحفظ بياناتك: " + customerError.message;
+      btn.disabled = false;
+      btn.textContent = "إنشاء الحساب";
+      return;
+    }
+
+    window.location.href = redirectTo;
+  }
+</script>
+
+</body>
+</html>
