@@ -106,6 +106,8 @@ textarea { resize: vertical; min-height: 50px; }
   let cities = [];
   let subtotal = 0;
 
+   let loggedInCustomer = null;
+
   async function init() {
     const cart = getCart();
     subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -114,6 +116,26 @@ textarea { resize: vertical; min-height: 50px; }
       window.location.href = "cart.html";
       return;
     }
+
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) {
+      const { data: customer } = await supabaseClient
+        .from("customers")
+        .select("*")
+        .eq("auth_user_id", session.user.id)
+        .single();
+      loggedInCustomer = customer;
+    }
+
+    const { data } = await supabaseClient
+      .from("cities")
+      .select("id, name, shipping_price")
+      .eq("active", true)
+      .order("name");
+
+    cities = data || [];
+    render();
+  }
 
     const { data } = await supabaseClient
       .from("cities")
