@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>حسابي | كرستال</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF9F4;--surface:#ffffff;--text:#241F17;--muted:#79705F;--border:#E7E0D0;
+  --primary:#A9822A;--n100:#F7F3E9;--success:#2E7D32;--warning:#0E7C86;--error:#DC2626;
+  --r-md:8px;--r-lg:12px;--sh-sm:0 1px 2px rgba(16,24,40,.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color: var(--text); }
+.en { font-family: 'Inter'; direction: ltr; unicode-bidi: isolate; }
+.site-header { background: var(--primary); color: #fff; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+.wordmark { font-family: 'Inter'; font-weight: 800; letter-spacing: 1.5px; }
+.back-link { color: #fff; text-decoration: none; font-size: 1.2rem; width: 24px; }
+.logout-btn {
+  background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.4);
+  padding: 6px 12px; border-radius: 999px; font-size: 0.75rem; font-family: 'Tajawal'; cursor: pointer;
+}
+.container { padding: 16px; max-width: 500px; margin: 0 auto; }
+.profile-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px; margin-bottom: 16px; box-shadow: var(--sh-sm); }
+.profile-name { font-weight: 800; font-size: 1.05rem; }
+.profile-meta { font-size: 0.8rem; color: var(--muted); margin-top: 3px; }
+.section-title { font-size: 0.85rem; color: var(--muted); margin-bottom: 10px; }
+.order-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 14px; margin-bottom: 10px; box-shadow: var(--sh-sm); }
+.o-top { display: flex; justify-content: space-between; align-items: center; }
+.o-number { font-family: 'Inter'; font-weight: 800; color: var(--primary); font-size: 0.9rem; }
+.badge { font-size: 0.7rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
+.badge.pending_verification, .badge.new { background: #E1F1F2; color: var(--warning); }
+.badge.prepared, .badge.out_for_delivery { background: var(--n100); color: var(--primary); }
+.badge.delivered { background: #E7F4E8; color: var(--success); }
+.badge.cancelled { background: #FBEAEA; color: var(--error); }
+.o-meta { font-size: 0.78rem; color: var(--muted); margin-top: 6px; }
+.o-total { font-family: 'Inter'; font-weight: 800; color: var(--primary); margin-top: 6px; }
+.empty, .loading { text-align: center; padding: 50px 20px; color: var(--muted); }
+.auth-prompt { text-align: center; padding: 50px 20px; }
+.auth-prompt a { display: inline-block; margin-top: 14px; background: var(--primary); color: #fff; padding: 11px 24px; border-radius: var(--r-md); text-decoration: none; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="index.html" class="back-link">→</a>
+  <span class="wordmark">CRYSTAL</span>
+  <button class="logout-btn" id="logoutBtn" onclick="logout()" style="display:none;">تسجيل الخروج</button>
+</header>
+
+<div id="content" class="loading">جاري التحميل...</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://ptahgriuztxqsegkueln.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const STATUS_LABEL = {
+    pending_verification: "بانتظار التأكيد", new: "طلب جديد", prepared: "تم التجهيز",
+    out_for_delivery: "قيد التوصيل", delivered: "تم التسليم", cancelled: "ملغى"
+  };
+
+  async function load() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+
+    if (!session) {
+      document.getElementById("content").innerHTML = `
+        <div class="auth-prompt">
+          ما عندكش حساب مسجل حاليًا.<br>
+          <a href="customer-login.html">تسجيل الدخول أو إنشاء حساب</a>
+        </div>
+      `;
+      return;
+    }
+
+    document.getElementById("logoutBtn").style.display = "inline-block";
+
+    const { data: customer } = await supabaseClient
+      .from("customers")
+      .select("*")
+      .eq("auth_user_id", session.user.id)
+      .single();
+
+    const { data: orders } = await supabaseClient
+      .from("orders")
+      .select("id, order_number, status, grand_total, created_at")
+      .order("created_at", { ascending: false });
+
+    const ordersHtml = (orders && orders.length > 0)
+      ? orders.map(o => {
+          const dateStr = new Date(o.created_at).toLocaleDateString("ar-LY", { dateStyle: "medium" });
+          return `
+            <div class="order-card">
+              <div class="o-top">
+                <span class="o-number">#${o.order_number}</span>
+                <span class="badge ${o.status}">${STATUS_LABEL[o.status] || o.status}</span>
+              </div>
+              <div class="o-meta">${dateStr}</div>
+              <div class="o-total en">${o.grand_total} د.ل</div>
+            </div>
+          `;
+        }).join("")
+      : `<div class="empty">ماعندكش طلبات مازال</div>`;
+
+    document.getElementById("content").innerHTML = `
+      <div class="container">
+        <div class="profile-box">
+          <div class="profile-name">${customer?.name || session.user.email}</div>
+          <div class="profile-meta">${customer?.phone || ""}</div>
+          <div class="profile-meta">${session.user.email}</div>
+        </div>
+        <div class="section-title">طلباتي السابقة</div>
+        ${ordersHtml}
+      </div>
+    `;
+  }
+
+  async function logout() {
+    await supabaseClient.auth.signOut();
+    window.location.href = "index.html";
+  }
+
+  load();
+</script>
+
+</body>
+</html>
