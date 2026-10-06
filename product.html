@@ -17,15 +17,28 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
 .en { font-family: 'Inter', sans-serif; direction: ltr; unicode-bidi: isolate; }
 .site-header {
   background: var(--primary); color: #fff; padding: 14px 18px;
-  display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100;
 }
 .site-header .wordmark { font-family: 'Inter'; font-weight: 800; letter-spacing: 1.5px; font-size: 1.1rem; }
-.back-link { color: #fff; text-decoration: none; font-size: 1.2rem; }
+.back-link { color: #fff; text-decoration: none; font-size: 1.2rem; width: 24px; }
+.cart-badge {
+  display: flex; align-items: center; gap: 6px;
+  background: #fff; color: var(--primary); padding: 5px 11px;
+  border-radius: 999px; font-size: 0.78rem; font-weight: 700; text-decoration: none;
+}
+.cart-icon { width: 15px; height: 15px; }
 
 .container { max-width: 480px; margin: 0 auto; padding-bottom: 20px; }
-.main-img { width: 100%; height: 300px; object-fit: cover; background: var(--n100); }
+.main-img { width: 100%; height: 300px; object-fit: cover; background: var(--n100); display: block; }
+.thumb-row { display: flex; gap: 8px; padding: 10px 16px; overflow-x: auto; }
+.thumb-row img {
+  width: 56px; height: 56px; object-fit: cover; border-radius: var(--r-md);
+  border: 2px solid transparent; cursor: pointer; flex-shrink: 0;
+}
+.thumb-row img.active { border-color: var(--primary); }
+
 .content { padding: 16px; }
-.tags { display: flex; gap: 6px; margin-bottom: 8px; }
+.tags { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
 .tag { font-size: 0.7rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
 .tag.trend { background: var(--n100); color: var(--primary); }
 .tag.low { background: #E1F1F2; color: var(--warning); }
@@ -70,6 +83,13 @@ h1 { font-size: 1.15rem; margin-bottom: 6px; }
 <header class="site-header">
   <a href="index.html" class="back-link">→</a>
   <span class="wordmark">CRYSTAL</span>
+  <a href="cart.html" class="cart-badge" id="cartBadge">
+    <svg class="cart-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/>
+      <path d="M3 4h2l2.4 12.4a2 2 0 002 1.6h8.2a2 2 0 002-1.6L21 8H6"/>
+    </svg>
+    <span id="cartCount">0</span>
+  </a>
 </header>
 
 <div id="content" class="loading">جاري التحميل...</div>
@@ -85,6 +105,7 @@ h1 { font-size: 1.15rem; margin-bottom: 6px; }
   const productId = params.get("id");
 
   let currentProduct = null;
+  let currentImages = [];
 
   function getCart() {
     try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
@@ -95,7 +116,15 @@ h1 { font-size: 1.15rem; margin-bottom: 6px; }
     localStorage.setItem(CART_KEY, JSON.stringify(cart));
   }
 
+  function updateCartBadge() {
+    const cart = getCart();
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    document.getElementById("cartCount").textContent = totalItems;
+  }
+
   async function load() {
+    updateCartBadge();
+
     if (!productId) { window.location.href = "index.html"; return; }
 
     const { data: p, error } = await supabaseClient
@@ -115,8 +144,11 @@ h1 { font-size: 1.15rem; margin-bottom: 6px; }
     }
 
     currentProduct = p;
-    const images = (p.product_images || []).sort((a,b) => a.sort_order - b.sort_order);
-    const img = images[0]?.image_url || "https://via.placeholder.com/400x400?text=No+Image";
+    currentImages = (p.product_images || []).sort((a,b) => a.sort_order - b.sort_order);
+    if (currentImages.length === 0) {
+      currentImages = [{ image_url: "https://via.placeholder.com/400x400?text=No+Image" }];
+    }
+
     const unitLabel = p.sale_unit === "dozen" ? "دستة" : "قطعة";
     const activeColors = (p.product_colors || []).filter(c => c.active);
     const hasColors = activeColors.length > 0;
@@ -125,9 +157,16 @@ h1 { font-size: 1.15rem; margin-bottom: 6px; }
       ? `<option value="">اختاري لون</option>` + activeColors.map(c => `<option value="${c.color_name}">${c.color_name}</option>`).join("")
       : "";
 
+    const thumbsHtml = currentImages.length > 1
+      ? `<div class="thumb-row" id="thumbRow">${currentImages.map((img, i) =>
+          `<img src="${img.image_url}" class="${i === 0 ? 'active' : ''}" onclick="setMainImage(${i})">`
+        ).join("")}</div>`
+      : "";
+
     document.getElementById("content").innerHTML = `
       <div class="container">
-        <img src="${img}" class="main-img" alt="${p.name}">
+        <img src="${currentImages[0].image_url}" class="main-img" id="mainImg" alt="${p.name}">
+        ${thumbsHtml}
         <div class="content">
           <div class="tags">
             ${p.categories ? `<span class="tag trend">${p.categories.name}</span>` : ""}
@@ -160,6 +199,13 @@ h1 { font-size: 1.15rem; margin-bottom: 6px; }
     `;
   }
 
+  function setMainImage(index) {
+    document.getElementById("mainImg").src = currentImages[index].image_url;
+    document.querySelectorAll("#thumbRow img").forEach((img, i) => {
+      img.classList.toggle("active", i === index);
+    });
+  }
+
   function changeQty(delta) {
     const input = document.getElementById("qtyInput");
     let val = parseInt(input.value) || 1;
@@ -178,9 +224,6 @@ h1 { font-size: 1.15rem; margin-bottom: 6px; }
       if (!colorName) { alert("لازم تختاري لون أول"); return; }
     }
 
-    const images = (currentProduct.product_images || []).sort((a,b) => a.sort_order - b.sort_order);
-    const img = images[0]?.image_url || "https://via.placeholder.com/300x300?text=No+Image";
-
     const cart = getCart();
     const existing = cart.find(item => item.product_id === currentProduct.id && item.color === (colorName || null));
 
@@ -194,11 +237,12 @@ h1 { font-size: 1.15rem; margin-bottom: 6px; }
         sale_unit: currentProduct.sale_unit,
         color: colorName || null,
         quantity: qty,
-        image: img
+        image: currentImages[0].image_url
       });
     }
 
     saveCart(cart);
+    updateCartBadge();
     const msg = document.getElementById("addedMsg");
     msg.style.display = "block";
     setTimeout(() => { msg.style.display = "none"; }, 1800);
