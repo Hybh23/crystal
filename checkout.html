@@ -1,326 +1,670 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>إتمام الطلب | كرستال</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#FBF9F4;--surface:#ffffff;--text:#241F17;--muted:#79705F;--border:#E7E0D0;
-  --primary:#A9822A;--secondary:#B9975B;
-  --n100:#F7F3E9;--n300:#E2D9C3;
-  --success:#2E7D32;--warning:#0E7C86;--error:#DC2626;
-  --r-sm:4px;--r-md:8px;--r-lg:12px;--r-xl:20px;
-  --sh-sm:0 1px 2px rgba(16,24,40,.06);
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color: var(--text); }
-.en { font-family: 'Inter', sans-serif; direction: ltr; unicode-bidi: isolate; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إتمام الطلب | كرستال</title>
 
-.site-header { background: var(--primary); color: #fff; padding: 16px 20px; text-align: center; }
-.site-header .wordmark { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 1.1rem; letter-spacing: 1.5px; }
-.site-header .page-title { font-size: 0.8rem; color: #F2E6C8; margin-top: 2px; }
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
 
-.container { padding: 14px; max-width: 480px; margin: 0 auto; }
-.box {
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
-  padding: 18px; margin-bottom: 14px; box-shadow: var(--sh-sm);
-}
-label { display: block; font-size: 0.78rem; color: var(--muted); margin: 10px 0 5px; }
-input, select, textarea {
-  width: 100%; padding: 10px; border: 1.5px solid var(--border);
-  border-radius: var(--r-md); font-size: 0.88rem; font-family: 'Tajawal';
-  background: var(--surface); color: var(--text);
-}
-input.invalid { border-color: var(--error); }
-input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); }
-textarea { resize: vertical; min-height: 50px; }
-.field-error { color: var(--error); font-size: 0.72rem; margin-top: 4px; display: none; }
+  <style>
+    :root {
+      --bg: #FBF9F4;
+      --surface: #ffffff;
+      --text: #241F17;
+      --muted: #79705F;
+      --border: #E7E0D0;
+      --primary: #A9822A;
+      --secondary: #B9975B;
+      --n100: #F7F3E9;
+      --n300: #E2D9C3;
+      --success: #2E7D32;
+      --warning: #0E7C86;
+      --error: #DC2626;
+      --r-sm: 4px;
+      --r-md: 8px;
+      --r-lg: 12px;
+      --r-xl: 20px;
+      --sh-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+    }
 
-.pay-option {
-  display: flex; align-items: center; gap: 8px; padding: 11px;
-  border: 1.5px solid var(--border); border-radius: var(--r-md);
-  margin-top: 8px; cursor: pointer; font-size: 0.9rem;
-}
-.pay-option input { width: auto; }
-.bank-details {
-  background: var(--n100); border-radius: var(--r-md);
-  padding: 14px; margin-top: 10px; font-size: 0.85rem; display: none;
-}
-.bank-details div { margin-bottom: 5px; }
-.bank-details b { color: var(--primary); }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-.summary-row { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 7px; }
-.summary-row.total {
-  font-weight: 800; font-size: 1.05rem; color: var(--primary);
-  border-top: 1px solid var(--border); padding-top: 10px;
-}
-.submit-btn {
-  width: 100%; padding: 14px; background: var(--primary); color: #fff;
-  border: none; border-radius: var(--r-md); font-size: 0.95rem;
-  font-weight: 700; font-family: 'Tajawal'; margin-top: 12px; cursor: pointer;
-}
-.submit-btn:disabled { opacity: 0.6; }
-.err { color: var(--error); font-size: 0.82rem; text-align: center; margin-top: 10px; font-weight: 700; }
-</style>
+    body {
+      font-family: "Tajawal", Tahoma, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .en {
+      font-family: "Inter", sans-serif;
+      direction: ltr;
+      unicode-bidi: isolate;
+    }
+
+    .site-header {
+      background: var(--primary);
+      color: #fff;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      text-align: right;
+    }
+
+    .site-header .wordmark {
+      font-family: "Inter", sans-serif;
+      font-weight: 800;
+      font-size: 1.1rem;
+      letter-spacing: 1.5px;
+    }
+
+    .site-header .page-title {
+      font-size: 0.8rem;
+      color: #F2E6C8;
+      margin-top: 2px;
+    }
+
+    .back-link {
+      color: #fff;
+      text-decoration: none;
+      font-size: 1.2rem;
+      width: 24px;
+    }
+
+    .header-space {
+      width: 24px;
+    }
+
+    .container {
+      padding: 14px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 18px;
+      margin-bottom: 14px;
+      box-shadow: var(--sh-sm);
+    }
+
+    label {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin: 10px 0 5px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-md);
+      font-size: 0.88rem;
+      font-family: "Tajawal", sans-serif;
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    input.invalid {
+      border-color: var(--error);
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 50px;
+    }
+
+    .field-error {
+      color: var(--error);
+      font-size: 0.72rem;
+      margin-top: 4px;
+      display: none;
+    }
+
+    .pay-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-md);
+      margin-top: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .pay-option input {
+      width: auto;
+    }
+
+    .bank-details {
+      background: var(--n100);
+      border-radius: var(--r-md);
+      padding: 14px;
+      margin-top: 10px;
+      font-size: 0.85rem;
+      display: none;
+    }
+
+    .bank-details div {
+      margin-bottom: 5px;
+    }
+
+    .bank-details b {
+      color: var(--primary);
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      margin-bottom: 7px;
+    }
+
+    .summary-row.total {
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: var(--primary);
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--r-md);
+      font-size: 0.95rem;
+      font-weight: 700;
+      font-family: "Tajawal", sans-serif;
+      margin-top: 12px;
+      cursor: pointer;
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .err {
+      color: var(--error);
+      font-size: 0.82rem;
+      text-align: center;
+      margin-top: 10px;
+      font-weight: 700;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 45px 20px;
+      color: var(--muted);
+    }
+
+    .logged-customer {
+      background: var(--n100);
+      padding: 10px;
+      border-radius: var(--r-md);
+      margin-bottom: 10px;
+      font-size: 0.85rem;
+    }
+  </style>
 </head>
+
 <body>
+  <header class="site-header">
+    <a href="cart.html" class="back-link">→</a>
 
-<header class="site-header" style="display:flex; align-items:center; justify-content:space-between; text-align:right;">
-  <a href="cart.html" style="color:#fff; text-decoration:none; font-size:1.2rem; width:24px;">→</a>
-  <div>
-    <div class="wordmark en">CRYSTAL</div>
-    <div class="page-title">إتمام الطلب</div>
+    <div>
+      <div class="wordmark en">CRYSTAL</div>
+      <div class="page-title">إتمام الطلب</div>
+    </div>
+
+    <span class="header-space"></span>
+  </header>
+
+  <div class="container" id="container">
+    <div class="loading">جاري التحميل...</div>
   </div>
-  <span style="width:24px;"></span>
-</header>
 
-<div class="container" id="container">جاري التحميل...</div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  const SUPABASE_URL = "https://ptahgriuztxqsegkueln.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
-  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  const CART_KEY = "crystal_cart";
+  <script>
+    const SUPABASE_URL = "https://ptahgriuztxqsegkueln.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
 
-  const BANK_NAME = "مصرف الصحاري";
-  const BANK_ACCOUNT_HOLDER = "محمد ابراهيم محمد زيدان";
-  const BANK_ACCOUNT_NUMBER = "2009392184 / IBAN: LY44006009000002009392184";
+    const supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
 
-  // رقم ليبي صحيح: 09(1-5)XXXXXXX أو +218/00218 بدون الصفر
-  const LY_PHONE_REGEX = /^(?:\+218|00218|0)9[1-4][0-9]{7}$/;
+    const CART_KEY = "crystal_cart";
 
-  function isValidLibyanPhone(value) {
-    const cleaned = value.replace(/[\s-]/g, "");
-    return LY_PHONE_REGEX.test(cleaned);
-  }
+    const BANK_NAME = "مصرف الصحاري";
+    const BANK_ACCOUNT_HOLDER = "محمد ابراهيم محمد زيدان";
+    const BANK_ACCOUNT_NUMBER = "2009392184 / IBAN: LY44006009000002009392184";
 
-  function getCart() {
-    try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
-    catch { return []; }
-  }
+    const LY_PHONE_REGEX = /^(?:\+218|00218|0)9[1-4][0-9]{7}$/;
 
-  let cities = [];
-  let subtotal = 0;
+    let cities = [];
+    let subtotal = 0;
+    let loggedInCustomer = null;
 
-   let loggedInCustomer = null;
-
-  async function init() {
-    const cart = getCart();
-    subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-    if (cart.length === 0 || subtotal < 300) {
-      window.location.href = "cart.html";
-      return;
+    function isValidLibyanPhone(value) {
+      const cleaned = String(value || "").replace(/[\s-]/g, "");
+      return LY_PHONE_REGEX.test(cleaned);
     }
 
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (session) {
-      const { data: customer } = await supabaseClient
-        .from("customers")
-        .select("*")
-        .eq("auth_user_id", session.user.id)
-        .single();
-      loggedInCustomer = customer;
+    function getCart() {
+      try {
+        return JSON.parse(localStorage.getItem(CART_KEY)) || [];
+      } catch {
+        return [];
+      }
     }
 
-    const { data } = await supabaseClient
-      .from("cities")
-      .select("id, name, shipping_price")
-      .eq("active", true)
-      .order("name");
+    async function init() {
+      const cart = getCart();
 
-    cities = data || [];
-    render();
-  }
+      subtotal = cart.reduce((sum, item) => {
+        return sum + Number(item.price || 0) * Number(item.quantity || 0);
+      }, 0);
 
-    const { data } = await supabaseClient
-      .from("cities")
-      .select("id, name, shipping_price")
-      .eq("active", true)
-      .order("name");
+      if (cart.length === 0 || subtotal < 300) {
+        window.location.href = "cart.html";
+        return;
+      }
 
-    cities = data || [];
-    render();
-  }
-      <div class="box">
-        ${loggedInCustomer ? `
-        <div style="background:var(--n100); padding:10px; border-radius:var(--r-md); margin-bottom:10px; font-size:0.85rem;">
-          مسجّلة باسم <b>${loggedInCustomer.name}</b> — ${loggedInCustomer.phone}
+      const {
+        data: { session }
+      } = await supabaseClient.auth.getSession();
+
+      if (session) {
+        const { data: customer, error: customerError } = await supabaseClient
+          .from("customers")
+          .select("*")
+          .eq("auth_user_id", session.user.id)
+          .maybeSingle();
+
+        if (!customerError && customer) {
+          loggedInCustomer = customer;
+        }
+      }
+
+      const { data, error } = await supabaseClient
+        .from("cities")
+        .select("id, name, shipping_price")
+        .eq("active", true)
+        .order("name");
+
+      if (error) {
+        document.getElementById("container").innerHTML = `
+          <div class="err">
+            تعذر تحميل المدن: ${error.message}
+          </div>
+        `;
+        return;
+      }
+
+      cities = data || [];
+      render();
+    }
+
+    function render() {
+      const cityOptions = cities.map((city) => {
+        const shippingPrice = Number(city.shipping_price || 0);
+
+        return `
+          <option value="${city.id}" data-price="${shippingPrice}">
+            ${city.name} — ${shippingPrice.toFixed(2)} د.ل
+          </option>
+        `;
+      }).join("");
+
+      const customerInfo = loggedInCustomer
+        ? `
+          <div class="logged-customer">
+            مسجّلة باسم <b>${loggedInCustomer.name || "—"}</b>
+            — ${loggedInCustomer.phone || ""}
+          </div>
+        `
+        : `
+          <label>الاسم الكامل *</label>
+          <input type="text" id="name">
+
+          <label>رقم الهاتف *</label>
+          <input
+            type="tel"
+            id="phone"
+            placeholder="مثال: 0911234567"
+            oninput="validatePhoneField('phone', 'phoneError')"
+          >
+          <div class="field-error" id="phoneError">
+            رقم غير صحيح. مثال صحيح: 0911234567
+          </div>
+
+          <label>رقم هاتف ثانٍ (اختياري)</label>
+          <input
+            type="tel"
+            id="secondPhone"
+            placeholder="مثال: 0921234567"
+            oninput="validatePhoneField('secondPhone', 'secondPhoneError')"
+          >
+          <div class="field-error" id="secondPhoneError">
+            رقم غير صحيح. مثال صحيح: 0911234567
+          </div>
+
+          <label>اسم المحل (اختياري)</label>
+          <input type="text" id="shopName">
+        `;
+
+      document.getElementById("container").innerHTML = `
+        <div class="box">
+          ${customerInfo}
+
+          <label>المدينة *</label>
+          <select id="city" onchange="updateTotal()">
+            <option value="">اختار المدينة</option>
+            ${cityOptions}
+          </select>
+
+          <label>المنطقة *</label>
+          <input type="text" id="area">
+
+          <label>تفاصيل العنوان (اختياري)</label>
+          <input type="text" id="addressDetails">
+
+          <label>ملاحظات (اختياري)</label>
+          <textarea id="notes"></textarea>
         </div>
-        ` : `
-        <label>الاسم الكامل *</label>
-        <input type="text" id="name">
-        <label>رقم الهاتف *</label>
-        <input type="tel" id="phone" placeholder="مثال: 0911234567" oninput="validatePhoneField('phone', 'phoneError')">
-        <div class="field-error" id="phoneError">رقم غير صحيح. مثال صحيح: 0911234567</div>
 
-        <label>رقم هاتف ثانٍ (اختياري)</label>
-        <input type="tel" id="secondPhone" placeholder="مثال: 0921234567" oninput="validatePhoneField('secondPhone', 'secondPhoneError')">
-        <div class="field-error" id="secondPhoneError">رقم غير صحيح. مثال صحيح: 0911234567</div>
+        <div class="box">
+          <label style="margin-top:0;">طريقة الدفع *</label>
 
-        <label>اسم المحل (اختياري)</label>
-        <input type="text" id="shopName">
-        `}
-        <label>المدينة *</label>
-        <select id="city" onchange="updateTotal()">
-          <option value="">اختار المدينة</option>
-          ${cityOptions}
-        </select>
-        <label>المنطقة *</label>
-        <input type="text" id="area">
-        <label>تفاصيل العنوان (اختياري)</label>
-        <input type="text" id="addressDetails">
-        <label>ملاحظات (اختياري)</label>
-        <textarea id="notes"></textarea>
-      </div>
+          <label class="pay-option">
+            <input
+              type="radio"
+              name="payMethod"
+              value="cod"
+              checked
+              onchange="togglePayment()"
+            >
+            الدفع عند الاستلام
+          </label>
 
-      <div class="box">
-        <label style="margin-top:0;">طريقة الدفع *</label>
-        <label class="pay-option">
-          <input type="radio" name="payMethod" value="cod" checked onchange="togglePayment()">
-          الدفع عند الاستلام
-        </label>
-        <label class="pay-option">
-          <input type="radio" name="payMethod" value="bank_transfer" onchange="togglePayment()">
-          تحويل مصرفي
-        </label>
-        <div class="bank-details" id="bankDetails">
-          <div><b>المصرف:</b> ${BANK_NAME}</div>
-          <div><b>اسم الحساب:</b> ${BANK_ACCOUNT_HOLDER}</div>
-          <div><b>رقم الحساب:</b> ${BANK_ACCOUNT_NUMBER}</div>
-          <div style="margin-top:8px;">بعد التحويل، أرسل صورة الإيصال مع رقم طلبك عبر واتساب لتأكيد الدفع.</div>
+          <label class="pay-option">
+            <input
+              type="radio"
+              name="payMethod"
+              value="bank_transfer"
+              onchange="togglePayment()"
+            >
+            تحويل مصرفي
+          </label>
+
+          <div class="bank-details" id="bankDetails">
+            <div><b>المصرف:</b> ${BANK_NAME}</div>
+            <div><b>اسم الحساب:</b> ${BANK_ACCOUNT_HOLDER}</div>
+            <div><b>رقم الحساب:</b> ${BANK_ACCOUNT_NUMBER}</div>
+            <div style="margin-top:8px;">
+              بعد التحويل، أرسل صورة الإيصال مع رقم طلبك عبر واتساب لتأكيد الدفع.
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div class="box">
-        <div class="summary-row"><span>إجمالي المنتجات</span><span class="en">${subtotal.toFixed(2)} د.ل</span></div>
-        <div class="summary-row"><span>التوصيل</span><span class="en" id="shippingDisplay">—</span></div>
-        <div class="summary-row total"><span>الإجمالي</span><span class="en" id="grandTotalDisplay">—</span></div>
-        <button class="submit-btn" id="submitBtn" onclick="submitOrder()">تأكيد الطلب</button>
-        <div class="err" id="errMsg"></div>
-      </div>
-    `;
-  }
+        <div class="box">
+          <div class="summary-row">
+            <span>إجمالي المنتجات</span>
+            <span class="en">${subtotal.toFixed(2)} د.ل</span>
+          </div>
 
-  function validatePhoneField(inputId, errorId) {
-    const input = document.getElementById(inputId);
-    const error = document.getElementById(errorId);
-    const value = input.value.trim();
+          <div class="summary-row">
+            <span>التوصيل</span>
+            <span class="en" id="shippingDisplay">—</span>
+          </div>
 
-    if (value === "" && inputId === "secondPhone") {
-      input.classList.remove("invalid");
-      error.style.display = "none";
-      return;
+          <div class="summary-row total">
+            <span>الإجمالي</span>
+            <span class="en" id="grandTotalDisplay">—</span>
+          </div>
+
+          <button
+            class="submit-btn"
+            id="submitBtn"
+            onclick="submitOrder()"
+          >
+            تأكيد الطلب
+          </button>
+
+          <div class="err" id="errMsg"></div>
+        </div>
+      `;
     }
 
-    if (!isValidLibyanPhone(value)) {
-      input.classList.add("invalid");
-      error.style.display = "block";
-    } else {
-      input.classList.remove("invalid");
-      error.style.display = "none";
-    }
-  }
+    function validatePhoneField(inputId, errorId) {
+      const input = document.getElementById(inputId);
+      const error = document.getElementById(errorId);
 
-  function togglePayment() {
-    const method = document.querySelector('input[name="payMethod"]:checked').value;
-    document.getElementById("bankDetails").style.display = method === "bank_transfer" ? "block" : "none";
-  }
+      if (!input || !error) return;
 
-  function updateTotal() {
-    const citySelect = document.getElementById("city");
-    const selected = citySelect.options[citySelect.selectedIndex];
-    const shipping = selected && selected.dataset.price ? parseFloat(selected.dataset.price) : 0;
-    document.getElementById("shippingDisplay").textContent = selected.value ? shipping.toFixed(2) + " د.ل" : "—";
-    document.getElementById("grandTotalDisplay").textContent = selected.value ? (subtotal + shipping).toFixed(2) + " د.ل" : "—";
-  }
+      const value = input.value.trim();
 
-   async function submitOrder() {
-    const cityId = document.getElementById("city").value;
-    const area = document.getElementById("area").value.trim();
-    const addressDetails = document.getElementById("addressDetails").value.trim();
-    const notes = document.getElementById("notes").value.trim();
-    const paymentMethod = document.querySelector('input[name="payMethod"]:checked').value;
-    const errMsg = document.getElementById("errMsg");
-    const btn = document.getElementById("submitBtn");
+      if (value === "" && inputId === "secondPhone") {
+        input.classList.remove("invalid");
+        error.style.display = "none";
+        return;
+      }
 
-    if (!cityId || !area) {
-      errMsg.textContent = "اختاري المدينة واكتبي المنطقة";
-      return;
+      if (!isValidLibyanPhone(value)) {
+        input.classList.add("invalid");
+        error.style.display = "block";
+      } else {
+        input.classList.remove("invalid");
+        error.style.display = "none";
+      }
     }
 
-    const cart = getCart();
-    const items = cart.map(item => ({
-      product_id: item.product_id,
-      product_name: item.name,
-      color_name: item.color,
-      sale_unit: item.sale_unit,
-      quantity: item.quantity,
-      unit_price: item.price
-    }));
+    function togglePayment() {
+      const selected = document.querySelector(
+        'input[name="payMethod"]:checked'
+      );
 
-    btn.disabled = true;
-    btn.textContent = "جاري إرسال الطلب...";
-    errMsg.textContent = "";
+      const bankDetails = document.getElementById("bankDetails");
 
-    let data, error;
+      if (!selected || !bankDetails) return;
 
-    if (loggedInCustomer) {
-      ({ data, error } = await supabaseClient.rpc("create_customer_order", {
-        p_city_id: cityId, p_area: area, p_address_details: addressDetails || null,
-        p_notes: notes || null, p_payment_method: paymentMethod, p_items: items
+      bankDetails.style.display =
+        selected.value === "bank_transfer" ? "block" : "none";
+    }
+
+    function updateTotal() {
+      const citySelect = document.getElementById("city");
+
+      if (!citySelect) return;
+
+      const selected =
+        citySelect.options[citySelect.selectedIndex];
+
+      const shipping =
+        selected && selected.dataset.price
+          ? Number(selected.dataset.price)
+          : 0;
+
+      const shippingDisplay =
+        document.getElementById("shippingDisplay");
+
+      const grandTotalDisplay =
+        document.getElementById("grandTotalDisplay");
+
+      if (!citySelect.value) {
+        shippingDisplay.textContent = "—";
+        grandTotalDisplay.textContent = "—";
+        return;
+      }
+
+      shippingDisplay.textContent =
+        `${shipping.toFixed(2)} د.ل`;
+
+      grandTotalDisplay.textContent =
+        `${(subtotal + shipping).toFixed(2)} د.ل`;
+    }
+
+    async function submitOrder() {
+      const cityId = document.getElementById("city").value;
+      const area = document.getElementById("area").value.trim();
+      const addressDetails =
+        document.getElementById("addressDetails").value.trim();
+
+      const notes =
+        document.getElementById("notes").value.trim();
+
+      const paymentMethod = document.querySelector(
+        'input[name="payMethod"]:checked'
+      ).value;
+
+      const errMsg = document.getElementById("errMsg");
+      const btn = document.getElementById("submitBtn");
+
+      if (!cityId || !area) {
+        errMsg.textContent = "اختاري المدينة واكتبي المنطقة";
+        return;
+      }
+
+      const cart = getCart();
+
+      if (cart.length === 0) {
+        errMsg.textContent = "السلة فارغة";
+        return;
+      }
+
+      const items = cart.map((item) => ({
+        product_id: item.product_id,
+        product_name: item.name,
+        color_name: item.color || null,
+        sale_unit: item.sale_unit,
+        quantity: Number(item.quantity),
+        unit_price: Number(item.price)
       }));
-    } else {
-      const name = document.getElementById("name").value.trim();
-      const phone = document.getElementById("phone").value.trim();
-      const secondPhone = document.getElementById("secondPhone").value.trim();
-      const shopName = document.getElementById("shopName").value.trim();
 
-      if (!name || !phone) {
-        errMsg.textContent = "املي الاسم والهاتف";
-        btn.disabled = false;
-        btn.textContent = "تأكيد الطلب";
-        return;
+      btn.disabled = true;
+      btn.textContent = "جاري إرسال الطلب...";
+      errMsg.textContent = "";
+
+      let data;
+      let error;
+
+      if (loggedInCustomer) {
+        ({ data, error } = await supabaseClient.rpc(
+          "create_customer_order",
+          {
+            p_city_id: cityId,
+            p_area: area,
+            p_address_details: addressDetails || null,
+            p_notes: notes || null,
+            p_payment_method: paymentMethod,
+            p_items: items
+          }
+        ));
+      } else {
+        const name = document.getElementById("name").value.trim();
+        const phone = document.getElementById("phone").value.trim();
+        const secondPhone =
+          document.getElementById("secondPhone").value.trim();
+
+        const shopName =
+          document.getElementById("shopName").value.trim();
+
+        if (!name || !phone) {
+          errMsg.textContent = "املي الاسم والهاتف";
+          btn.disabled = false;
+          btn.textContent = "تأكيد الطلب";
+          return;
+        }
+
+        if (!isValidLibyanPhone(phone)) {
+          errMsg.textContent =
+            "رقم الهاتف غير صحيح. مثال: 0911234567";
+
+          btn.disabled = false;
+          btn.textContent = "تأكيد الطلب";
+          return;
+        }
+
+        if (
+          secondPhone &&
+          !isValidLibyanPhone(secondPhone)
+        ) {
+          errMsg.textContent = "رقم الهاتف الثاني غير صحيح";
+          btn.disabled = false;
+          btn.textContent = "تأكيد الطلب";
+          return;
+        }
+
+        ({ data, error } = await supabaseClient.rpc(
+          "create_guest_order",
+          {
+            p_customer_name: name,
+            p_customer_phone: phone,
+            p_customer_second_phone: secondPhone || null,
+            p_shop_name: shopName || null,
+            p_city_id: cityId,
+            p_area: area,
+            p_address_details: addressDetails || null,
+            p_notes: notes || null,
+            p_payment_method: paymentMethod,
+            p_items: items
+          }
+        ));
       }
-      if (!isValidLibyanPhone(phone)) {
-        errMsg.textContent = "رقم الهاتف غير صحيح. مثال: 0911234567";
-        btn.disabled = false;
-        btn.textContent = "تأكيد الطلب";
-        return;
-      }
-      if (secondPhone && !isValidLibyanPhone(secondPhone)) {
-        errMsg.textContent = "رقم الهاتف الثاني غير صحيح";
+
+      if (error) {
+        errMsg.textContent = "خطأ: " + error.message;
         btn.disabled = false;
         btn.textContent = "تأكيد الطلب";
         return;
       }
 
-      ({ data, error } = await supabaseClient.rpc("create_guest_order", {
-        p_customer_name: name, p_customer_phone: phone, p_customer_second_phone: secondPhone || null,
-        p_shop_name: shopName || null, p_city_id: cityId, p_area: area,
-        p_address_details: addressDetails || null, p_notes: notes || null,
-        p_payment_method: paymentMethod, p_items: items
-      }));
+      const result = Array.isArray(data) ? data[0] : data;
+
+      if (!result || !result.result_order_number) {
+        errMsg.textContent =
+          "تم إرسال الطلب، لكن تعذر قراءة رقم الطلب. تواصلي مع الإدارة.";
+
+        btn.disabled = false;
+        btn.textContent = "تأكيد الطلب";
+        return;
+      }
+
+      localStorage.removeItem(CART_KEY);
+
+      window.location.href =
+        `order-confirmation.html?order=${encodeURIComponent(
+          result.result_order_number
+        )}&total=${encodeURIComponent(
+          result.result_grand_total
+        )}&method=${encodeURIComponent(paymentMethod)}`;
     }
 
-    if (error) {
-      errMsg.textContent = "خطأ: " + error.message;
-      btn.disabled = false;
-      btn.textContent = "تأكيد الطلب";
-      return;
-    }
-
-    const result = data[0];
-    localStorage.removeItem(CART_KEY);
-    window.location.href = `order-confirmation.html?order=${encodeURIComponent(result.result_order_number)}&total=${result.result_grand_total}&method=${paymentMethod}`;
-  }
-
-  init();
-</script>
-
+    init();
+  </script>
 </body>
 </html>
