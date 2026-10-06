@@ -146,25 +146,25 @@ textarea { resize: vertical; min-height: 50px; }
     cities = data || [];
     render();
   }
-
-  function render() {
-    const cityOptions = cities.map(c => `<option value="${c.id}" data-price="${c.shipping_price}">${c.name} (توصيل ${c.shipping_price} د.ل)</option>`).join("");
-
-    document.getElementById("container").innerHTML = `
       <div class="box">
+        ${loggedInCustomer ? `
+        <div style="background:var(--n100); padding:10px; border-radius:var(--r-md); margin-bottom:10px; font-size:0.85rem;">
+          مسجّلة باسم <b>${loggedInCustomer.name}</b> — ${loggedInCustomer.phone}
+        </div>
+        ` : `
         <label>الاسم الكامل *</label>
         <input type="text" id="name">
-
         <label>رقم الهاتف *</label>
-        <input type="tel" id="phone" placeholder="مثال: 0912345678" oninput="validatePhoneField('phone', 'phoneError')">
-        <div class="field-error" id="phoneError">رقم غير صحيح. مثال صحيح: 0912345678</div>
+        <input type="tel" id="phone" placeholder="مثال: 0911234567" oninput="validatePhoneField('phone', 'phoneError')">
+        <div class="field-error" id="phoneError">رقم غير صحيح. مثال صحيح: 0911234567</div>
 
         <label>رقم هاتف ثانٍ (اختياري)</label>
-        <input type="tel" id="secondPhone" placeholder="مثال: 0912345678" oninput="validatePhoneField('secondPhone', 'secondPhoneError')">
-        <div class="field-error" id="secondPhoneError">رقم غير صحيح. مثال صحيح: 0912345678</div>
+        <input type="tel" id="secondPhone" placeholder="مثال: 0921234567" oninput="validatePhoneField('secondPhone', 'secondPhoneError')">
+        <div class="field-error" id="secondPhoneError">رقم غير صحيح. مثال صحيح: 0911234567</div>
 
         <label>اسم المحل (اختياري)</label>
         <input type="text" id="shopName">
+        `}
         <label>المدينة *</label>
         <select id="city" onchange="updateTotal()">
           <option value="">اختار المدينة</option>
@@ -239,11 +239,7 @@ textarea { resize: vertical; min-height: 50px; }
     document.getElementById("grandTotalDisplay").textContent = selected.value ? (subtotal + shipping).toFixed(2) + " د.ل" : "—";
   }
 
-  async function submitOrder() {
-    const name = document.getElementById("name").value.trim();
-    const phone = document.getElementById("phone").value.trim();
-    const secondPhone = document.getElementById("secondPhone").value.trim();
-    const shopName = document.getElementById("shopName").value.trim();
+   async function submitOrder() {
     const cityId = document.getElementById("city").value;
     const area = document.getElementById("area").value.trim();
     const addressDetails = document.getElementById("addressDetails").value.trim();
@@ -252,20 +248,8 @@ textarea { resize: vertical; min-height: 50px; }
     const errMsg = document.getElementById("errMsg");
     const btn = document.getElementById("submitBtn");
 
-    if (!name || !phone || !cityId || !area) {
-      errMsg.textContent = "امل الاسم والهاتف والمدينة والمنطقة";
-      return;
-    }
-
-    if (!isValidLibyanPhone(phone)) {
-      errMsg.textContent = "رقم الهاتف غير صحيح. أدخل رقمًا ليبيًا صحيحًا مثل 0912345678 ";
-      document.getElementById("phone").classList.add("invalid");
-      return;
-    }
-
-    if (secondPhone && !isValidLibyanPhone(secondPhone)) {
-      errMsg.textContent = "رقم الهاتف الثاني غير صحيح";
-      document.getElementById("secondPhone").classList.add("invalid");
+    if (!cityId || !area) {
+      errMsg.textContent = "اختاري المدينة واكتبي المنطقة";
       return;
     }
 
@@ -283,18 +267,45 @@ textarea { resize: vertical; min-height: 50px; }
     btn.textContent = "جاري إرسال الطلب...";
     errMsg.textContent = "";
 
-    const { data, error } = await supabaseClient.rpc("create_guest_order", {
-      p_customer_name: name,
-      p_customer_phone: phone,
-      p_customer_second_phone: secondPhone || null,
-      p_shop_name: shopName || null,
-      p_city_id: cityId,
-      p_area: area,
-      p_address_details: addressDetails || null,
-      p_notes: notes || null,
-      p_payment_method: paymentMethod,
-      p_items: items
-    });
+    let data, error;
+
+    if (loggedInCustomer) {
+      ({ data, error } = await supabaseClient.rpc("create_customer_order", {
+        p_city_id: cityId, p_area: area, p_address_details: addressDetails || null,
+        p_notes: notes || null, p_payment_method: paymentMethod, p_items: items
+      }));
+    } else {
+      const name = document.getElementById("name").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const secondPhone = document.getElementById("secondPhone").value.trim();
+      const shopName = document.getElementById("shopName").value.trim();
+
+      if (!name || !phone) {
+        errMsg.textContent = "املي الاسم والهاتف";
+        btn.disabled = false;
+        btn.textContent = "تأكيد الطلب";
+        return;
+      }
+      if (!isValidLibyanPhone(phone)) {
+        errMsg.textContent = "رقم الهاتف غير صحيح. مثال: 0911234567";
+        btn.disabled = false;
+        btn.textContent = "تأكيد الطلب";
+        return;
+      }
+      if (secondPhone && !isValidLibyanPhone(secondPhone)) {
+        errMsg.textContent = "رقم الهاتف الثاني غير صحيح";
+        btn.disabled = false;
+        btn.textContent = "تأكيد الطلب";
+        return;
+      }
+
+      ({ data, error } = await supabaseClient.rpc("create_guest_order", {
+        p_customer_name: name, p_customer_phone: phone, p_customer_second_phone: secondPhone || null,
+        p_shop_name: shopName || null, p_city_id: cityId, p_area: area,
+        p_address_details: addressDetails || null, p_notes: notes || null,
+        p_payment_method: paymentMethod, p_items: items
+      }));
+    }
 
     if (error) {
       errMsg.textContent = "خطأ: " + error.message;
