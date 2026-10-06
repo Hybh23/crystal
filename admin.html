@@ -1,3 +1,106 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة الإدارة | كرستال</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="كرستال">
+<meta name="theme-color" content="#A9822A">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF9F4;--surface:#ffffff;--text:#241F17;--muted:#79705F;--border:#E7E0D0;
+  --primary:#A9822A;--n100:#F7F3E9;--error:#DC2626;--success:#2E7D32;
+  --r-md:8px;--r-lg:12px;--sh-sm:0 1px 2px rgba(16,24,40,.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color: var(--text); }
+.site-header {
+  background: var(--primary); color: #fff; padding: 16px 20px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.site-header .wordmark { font-family: 'Inter'; font-weight: 800; letter-spacing: 1.5px; font-size: 1.1rem; }
+.logout-btn {
+  background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.4);
+  padding: 6px 14px; border-radius: 999px; font-size: 0.78rem; font-family: 'Tajawal'; cursor: pointer;
+}
+.container { padding: 18px; max-width: 480px; margin: 0 auto; }
+
+.notif-box {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+  padding: 16px; margin-bottom: 18px; box-shadow: var(--sh-sm); text-align: center;
+}
+.notif-box p { font-size: 0.82rem; color: var(--muted); margin-bottom: 12px; }
+.notif-btn {
+  background: var(--primary); color: #fff; border: none; padding: 11px 20px;
+  border-radius: var(--r-md); font-weight: 700; font-family: 'Tajawal'; font-size: 0.88rem; cursor: pointer;
+}
+.notif-status { font-size: 0.8rem; font-weight: 700; margin-top: 4px; }
+.notif-status.on { color: var(--success); }
+
+.section-title { font-size: 0.85rem; color: var(--muted); margin: 18px 0 10px; }
+.nav-card {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+  padding: 18px; margin-bottom: 12px; text-decoration: none; color: var(--text);
+  box-shadow: var(--sh-sm);
+}
+.nav-card .label { font-size: 1rem; font-weight: 700; }
+.nav-card .desc { font-size: 0.78rem; color: var(--muted); margin-top: 3px; }
+.nav-card .arrow { color: var(--primary); font-size: 1.2rem; }
+.checking { text-align: center; padding: 60px 20px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="checking" id="checking">جاري التحقق من الصلاحية...</div>
+
+<div id="pageContent" style="display:none;">
+  <header class="site-header">
+    <span class="wordmark">CRYSTAL</span>
+    <button class="logout-btn" onclick="logout()">تسجيل الخروج</button>
+  </header>
+
+  <div class="container">
+    <div class="notif-box" id="notifBox">
+      <p>فعّل التنبيهات عشان توصلك إشعارات فورية بالطلبات الجديدة</p>
+      <button class="notif-btn" id="notifBtn" onclick="enableNotifications()">تفعيل التنبيهات</button>
+      <div class="notif-status" id="notifStatus"></div>
+    </div>
+
+    <div class="section-title">الإدارة</div>
+
+    <a href="admin-orders.html" class="nav-card">
+      <div>
+        <div class="label">الطلبات</div>
+        <div class="desc">متابعة الطلبات الجديدة، تأكيد الدفع، وتحديث حالة التوصيل</div>
+      </div>
+      <span class="arrow">←</span>
+    </a>
+
+    <a href="admin-products.html" class="nav-card">
+      <div>
+        <div class="label">المنتجات</div>
+        <div class="desc">إضافة منتج جديد، تعديل السعر، إدارة المخزون، أو حذف منتج</div>
+      </div>
+      <span class="arrow">←</span>
+    </a>
+
+    <a href="admin-cities.html" class="nav-card">
+      <div>
+        <div class="label">المدن والتوصيل</div>
+        <div class="desc">إضافة مدينة جديدة أو تعديل سعر التوصيل</div>
+      </div>
+      <span class="arrow">←</span>
+    </a>
+  </div>
+</div>
+
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -22,12 +125,29 @@
       }
     };
 
-    OneSignal.Notifications.addEventListener("permissionChange", refreshStatus);
+    const saveSubscriptionId = async () => {
+      const subId = OneSignal.User.PushSubscription.id;
+      if (!subId) return;
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) return;
+      await supabaseClient.from("admin_push_subscriptions").upsert(
+        { user_id: session.user.id, subscription_id: subId },
+        { onConflict: "subscription_id" }
+      );
+    };
+
+    OneSignal.Notifications.addEventListener("permissionChange", () => {
+      refreshStatus();
+      saveSubscriptionId();
+    });
+
     refreshStatus();
+    if (OneSignal.Notifications.permission) saveSubscriptionId();
 
     window._enableNotif = async () => {
       await OneSignal.Notifications.requestPermission();
       refreshStatus();
+      saveSubscriptionId();
     };
   });
 
@@ -51,3 +171,6 @@
     window.location.href = "admin-login.html";
   }
 </script>
+
+</body>
+</html>
