@@ -14,9 +14,14 @@
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color: var(--text); }
-.site-header { background: var(--primary); color: #fff; padding: 16px; text-align: center; }
+.site-header {
+  background: var(--primary); color: #fff; padding: 14px 18px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.site-header .titles { text-align: center; flex: 1; }
 .site-header .wordmark { font-family: 'Inter'; font-weight: 800; letter-spacing: 1.5px; font-size: 1.1rem; }
 .site-header .page-title { font-size: 0.8rem; color: #F2E6C8; margin-top: 2px; }
+.back-link { color: #fff; text-decoration: none; font-size: 1.2rem; width: 24px; }
 
 .form-box {
   max-width: 420px; margin: 20px auto; background: var(--surface);
@@ -31,6 +36,8 @@ input, select {
 }
 input:focus, select:focus { outline: none; border-color: var(--primary); }
 .hint { font-size: 0.72rem; color: var(--muted); margin-top: 4px; }
+.preview-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.preview-row img { width: 56px; height: 56px; object-fit: cover; border-radius: var(--r-md); border: 1.5px solid var(--border); }
 .checkbox-row { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
 .checkbox-row input { width: auto; }
 .checkbox-row label { margin: 0; font-size: 0.85rem; color: var(--text); }
@@ -49,8 +56,12 @@ button:disabled { opacity: 0.6; }
 <body>
 
 <header class="site-header">
-  <div class="wordmark">CRYSTAL</div>
-  <div class="page-title">إضافة منتج جديد</div>
+  <a href="admin.html" class="back-link">→</a>
+  <div class="titles">
+    <div class="wordmark">CRYSTAL</div>
+    <div class="page-title">إضافة منتج جديد</div>
+  </div>
+  <span style="width:24px;"></span>
 </header>
 
 <div class="checking" id="checking">جاري التحقق من صلاحيتك...</div>
@@ -70,15 +81,18 @@ button:disabled { opacity: 0.6; }
     <option value="piece">قطعة</option>
     <option value="dozen">دستة</option>
   </select>
-  
+
   <label>الوصف (اختياري)</label>
   <input type="text" id="description" placeholder="وصف قصير للمنتج">
+
   <label>الألوان (اختياري)</label>
   <input type="text" id="colors" placeholder="ذهبي، فضي، أزرق">
-  <div class="hint">افصل بين كل لون وآخر بفاصلة. خليه فاضي لو المنتج بلا ألوان.</div>
+  <div class="hint">افصلي بين كل لون وآخر بفاصلة. اتركيه فاضي لو المنتج بلا ألوان.</div>
 
-  <label>صورة المنتج</label>
-  <input type="file" id="imageFile" accept="image/*">
+  <label>صور المنتج</label>
+  <input type="file" id="imageFiles" accept="image/*" multiple onchange="previewImages()">
+  <div class="hint">يمكن اختيار أكثر من صورة دفعة واحدة. أول صورة تُستخدم كصورة غلاف.</div>
+  <div class="preview-row" id="previewRow"></div>
 
   <div class="checkbox-row">
     <input type="checkbox" id="isTrending">
@@ -116,20 +130,31 @@ button:disabled { opacity: 0.6; }
   }
   init();
 
+  function previewImages() {
+    const files = document.getElementById("imageFiles").files;
+    const row = document.getElementById("previewRow");
+    row.innerHTML = "";
+    Array.from(files).forEach(file => {
+      const img = document.createElement("img");
+      img.src = URL.createObjectURL(file);
+      row.appendChild(img);
+    });
+  }
+
   async function saveProduct() {
     const name = document.getElementById("name").value.trim();
     const categoryId = document.getElementById("category").value;
     const price = parseFloat(document.getElementById("price").value);
     const saleUnit = document.getElementById("saleUnit").value;
-    const colorsRaw = document.getElementById("colors").value.trim();
     const description = document.getElementById("description").value.trim();
+    const colorsRaw = document.getElementById("colors").value.trim();
     const isTrending = document.getElementById("isTrending").checked;
-    const file = document.getElementById("imageFile").files[0];
+    const files = document.getElementById("imageFiles").files;
     const msg = document.getElementById("msg");
     const btn = document.getElementById("saveBtn");
 
-    if (!name || !price || !file || !categoryId) {
-      msg.textContent = "املي الاسم والقسم والسعر واختار صورة";
+    if (!name || !price || files.length === 0 || !categoryId) {
+      msg.textContent = "املي الاسم والقسم والسعر واختاري صورة واحدة على الأقل";
       msg.className = "msg err";
       return;
     }
@@ -140,7 +165,8 @@ button:disabled { opacity: 0.6; }
 
     const { data: product, error: productError } = await supabaseClient
       .from("products")
-      .insert({ name, price, sale_unit: saleUnit, active: true, category_id: categoryId, is_trending: isTrending, description: description || null })      .select()
+      .insert({ name, price, sale_unit: saleUnit, active: true, category_id: categoryId, is_trending: isTrending, description: description || null })
+      .select()
       .single();
 
     if (productError) {
@@ -151,35 +177,38 @@ button:disabled { opacity: 0.6; }
       return;
     }
 
-    const fileExt = file.name.split('.').pop();
-    const filePath = `${product.id}-${Date.now()}.${fileExt}`;
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${product.id}-${Date.now()}-${i}.${fileExt}`;
 
-    const { error: uploadError } = await supabaseClient.storage
-      .from("product-images")
-      .upload(filePath, file);
+      const { error: uploadError } = await supabaseClient.storage
+        .from("product-images")
+        .upload(filePath, file);
 
-    if (uploadError) {
-      msg.textContent = "تم حفظ المنتج لكن صار خطأ بالصورة: " + uploadError.message;
-      msg.className = "msg err";
-      btn.disabled = false;
-      btn.textContent = "حفظ المنتج";
-      return;
-    }
+      if (uploadError) {
+        msg.textContent = `تم حفظ المنتج، لكن صار خطأ برفع الصورة رقم ${i + 1}: ` + uploadError.message;
+        msg.className = "msg err";
+        btn.disabled = false;
+        btn.textContent = "حفظ المنتج";
+        return;
+      }
 
-    const { data: urlData } = supabaseClient.storage
-      .from("product-images")
-      .getPublicUrl(filePath);
+      const { data: urlData } = supabaseClient.storage
+        .from("product-images")
+        .getPublicUrl(filePath);
 
-    const { error: imageError } = await supabaseClient
-      .from("product_images")
-      .insert({ product_id: product.id, image_url: urlData.publicUrl, sort_order: 0 });
+      const { error: imageError } = await supabaseClient
+        .from("product_images")
+        .insert({ product_id: product.id, image_url: urlData.publicUrl, sort_order: i });
 
-    if (imageError) {
-      msg.textContent = "تم حفظ المنتج لكن صار خطأ بربط الصورة: " + imageError.message;
-      msg.className = "msg err";
-      btn.disabled = false;
-      btn.textContent = "حفظ المنتج";
-      return;
+      if (imageError) {
+        msg.textContent = `تم رفع الصورة رقم ${i + 1} لكن صار خطأ بربطها: ` + imageError.message;
+        msg.className = "msg err";
+        btn.disabled = false;
+        btn.textContent = "حفظ المنتج";
+        return;
+      }
     }
 
     if (colorsRaw) {
@@ -190,7 +219,7 @@ button:disabled { opacity: 0.6; }
         }));
         const { error: colorsError } = await supabaseClient.from("product_colors").insert(colorRows);
         if (colorsError) {
-          msg.textContent = "تم حفظ المنتج والصورة، لكن صار خطأ بالألوان: " + colorsError.message;
+          msg.textContent = "تم حفظ المنتج والصور، لكن صار خطأ بالألوان: " + colorsError.message;
           msg.className = "msg err";
           btn.disabled = false;
           btn.textContent = "حفظ المنتج";
@@ -199,13 +228,15 @@ button:disabled { opacity: 0.6; }
       }
     }
 
-    msg.textContent = "تم حفظ المنتج بنجاح!";
+    msg.textContent = `تم حفظ المنتج بنجاح مع ${files.length} صورة!`;
     msg.className = "msg ok";
     document.getElementById("name").value = "";
     document.getElementById("price").value = "";
+    document.getElementById("description").value = "";
     document.getElementById("colors").value = "";
     document.getElementById("isTrending").checked = false;
-    document.getElementById("imageFile").value = "";
+    document.getElementById("imageFiles").value = "";
+    document.getElementById("previewRow").innerHTML = "";
     btn.disabled = false;
     btn.textContent = "حفظ المنتج";
   }
