@@ -122,7 +122,7 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
             <span class="rank-value en">${count} طلب</span>
           </div>
         `).join("")
-      : `<div class="rank-row"><span>لا توجد بيانات بعد</span></div>`;
+      : `<div class="rank-row"><span>لا توجد بيانات الى الان</span></div>`;
 
     const productRows = topProducts.length > 0
       ? topProducts.map(([name, qty], i) => `
@@ -131,7 +131,7 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
             <span class="rank-value en">${qty}</span>
           </div>
         `).join("")
-      : `<div class="rank-row"><span>لا توجد بيانات بعد</span></div>`;
+      : `<div class="rank-row"><span>لا توجد بيانات الى الان</span></div>`;
 
     document.getElementById("content").innerHTML = `
       <div class="container">
