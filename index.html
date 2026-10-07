@@ -37,6 +37,12 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
 .brand-ar { font-family: 'Tajawal'; font-weight: 700; font-size: 1.1rem; color: #F2E6C8; margin-top: 2px; }
 .slogan { text-align: center; font-size: 1rem; font-weight: 800; color: #fff; margin-top: 14px; }
 .tagline { text-align: center; font-size: 0.72rem; color: #F2E6C8; margin-top: 4px; }
+.search-bar { background: var(--surface); padding: 10px 14px 0; }
+.search-bar input {
+  width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 999px;
+  font-size: 0.85rem; font-family: 'Tajawal'; background: var(--n100);
+}
+.search-bar input:focus { outline: none; border-color: var(--primary); background: var(--surface); }
 .icon-group { display: flex; align-items: center; gap: 12px; }
 .icon-btn { position: relative; color: #fff; background: none; border: none; cursor: pointer; padding: 0; text-decoration: none; }
 .icon-btn svg { width: 22px; height: 22px; display: block; }
@@ -153,7 +159,11 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
       </div>
     </div>
     <div class="slogan">جودة تلمع، ثقة تدوم</div>
-    <div class="tagline">اكسسوارات بالجملة والقطعة</div>  </header>
+    <div class="tagline">اكسسوارات بالجملة والقطعة</div>  
+   </header>
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="ابحث عن منتج..." oninput="handleSearch(this.value)">
+  </div>
   <div class="category-bar" id="categoryBar"></div>
 </div>
 
@@ -174,7 +184,8 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
   const FAV_KEY = "crystal_favorites";
   let allProducts = [];
   let currentFilter = "all";
-
+  let searchText = "";
+  function handleSearch(value) { searchText = value.trim().toLowerCase(); renderGrid(); }
   function getCart() { try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch { return []; } }
   function saveCart(cart) { localStorage.setItem(CART_KEY, JSON.stringify(cart)); updateCartBadge(); }
   function getFavs() { try { return JSON.parse(localStorage.getItem(FAV_KEY)) || []; } catch { return []; } }
@@ -300,6 +311,10 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
     if (currentFilter === "all") filtered = allProducts;
     else if (currentFilter === "trending") filtered = allProducts.filter(p => p.is_trending);
     else filtered = allProducts.filter(p => p.category_id === currentFilter);
+
+    if (searchText) {
+      filtered = filtered.filter(p => p.name.toLowerCase().includes(searchText));
+    }
 
     if (filtered.length === 0) {
       grid.innerHTML = `<div class="empty">لا توجد منتجات في هذا القسم حاليًا</div>`;
