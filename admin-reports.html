@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>التقارير | كرستال</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF9F4;--surface:#ffffff;--text:#241F17;--muted:#79705F;--border:#E7E0D0;
+  --primary:#A9822A;--n100:#F7F3E9;--success:#2E7D32;--warning:#0E7C86;
+  --r-md:8px;--r-lg:12px;--sh-sm:0 1px 2px rgba(16,24,40,.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color: var(--text); }
+.en { font-family: 'Inter'; direction: ltr; unicode-bidi: isolate; }
+.site-header { background: var(--primary); color: #fff; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+.wordmark { font-family: 'Inter'; font-weight: 800; letter-spacing: 1.5px; }
+.back-link { color: #fff; text-decoration: none; font-size: 1.2rem; width: 24px; }
+.container { padding: 16px; max-width: 560px; margin: 0 auto; }
+
+.stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.stat-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px; text-align: center; box-shadow: var(--sh-sm); }
+.stat-value { font-family: 'Inter'; font-weight: 800; font-size: 1.5rem; color: var(--primary); }
+.stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+.section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px; margin-bottom: 14px; box-shadow: var(--sh-sm); }
+.section-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+.rank-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+.rank-row:last-child { border-bottom: none; }
+.rank-name { display: flex; align-items: center; gap: 8px; }
+.rank-badge { width: 20px; height: 20px; border-radius: 50%; background: var(--n100); color: var(--primary); font-size: 0.7rem; font-weight: 800; display: flex; align-items: center; justify-content: center; font-family: 'Inter'; }
+.rank-value { font-family: 'Inter'; font-weight: 700; color: var(--primary); }
+
+.loading { text-align: center; padding: 60px 20px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="admin.html" class="back-link">→</a>
+  <span class="wordmark">التقارير</span>
+  <span style="width:24px;"></span>
+</header>
+
+<div id="content" class="loading">جاري حساب التقارير...</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://ptahgriuztxqsegkueln.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const STATUS_LABEL = {
+    pending_verification: "بانتظار التأكيد", new: "طلبات جديدة", prepared: "تم التجهيز",
+    out_for_delivery: "قيد التوصيل", delivered: "تم التسليم", cancelled: "ملغى"
+  };
+
+  async function checkAuth() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) { window.location.href = "admin-login.html"; return false; }
+    return true;
+  }
+
+  async function load() {
+    const ok = await checkAuth();
+    if (!ok) return;
+
+    const { data: orders } = await supabaseClient
+      .from("orders")
+      .select("id, status, payment_method, grand_total, cities ( name )");
+
+    const { data: items } = await supabaseClient
+      .from("order_items")
+      .select("order_id, product_name_snapshot, quantity");
+
+    const validOrderIds = new Set((orders || []).filter(o => o.status !== "cancelled").map(o => o.id));
+
+    // إجماليات
+    const totalOrders = (orders || []).length;
+    const totalRevenue = (orders || [])
+      .filter(o => o.status !== "cancelled")
+      .reduce((sum, o) => sum + parseFloat(o.grand_total), 0);
+
+    // الحالات
+    const statusCounts = {};
+    (orders || []).forEach(o => { statusCounts[o.status] = (statusCounts[o.status] || 0) + 1; });
+
+    // طرق الدفع
+    const codCount = (orders || []).filter(o => o.payment_method === "cod").length;
+    const bankCount = (orders || []).filter(o => o.payment_method === "bank_transfer").length;
+
+    // أكثر المدن طلبًا
+    const cityCounts = {};
+    (orders || []).forEach(o => {
+      const name = o.cities?.name || "غير محدد";
+      cityCounts[name] = (cityCounts[name] || 0) + 1;
+    });
+    const topCities = Object.entries(cityCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+    // أكثر المنتجات طلبًا (بالكمية)
+    const productQty = {};
+    (items || []).forEach(i => {
+      if (!validOrderIds.has(i.order_id)) return;
+      productQty[i.product_name_snapshot] = (productQty[i.product_name_snapshot] || 0) + i.quantity;
+    });
+    const topProducts = Object.entries(productQty).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+    const statusRows = Object.entries(statusCounts)
+      .map(([status, count]) => `
+        <div class="rank-row">
+          <span>${STATUS_LABEL[status] || status}</span>
+          <span class="rank-value en">${count}</span>
+        </div>
+      `).join("") || `<div class="rank-row"><span>لا توجد بيانات</span></div>`;
+
+    const cityRows = topCities.length > 0
+      ? topCities.map(([name, count], i) => `
+          <div class="rank-row">
+            <span class="rank-name"><span class="rank-badge">${i + 1}</span>${name}</span>
+            <span class="rank-value en">${count} طلب</span>
+          </div>
+        `).join("")
+      : `<div class="rank-row"><span>لا توجد بيانات بعد</span></div>`;
+
+    const productRows = topProducts.length > 0
+      ? topProducts.map(([name, qty], i) => `
+          <div class="rank-row">
+            <span class="rank-name"><span class="rank-badge">${i + 1}</span>${name}</span>
+            <span class="rank-value en">${qty}</span>
+          </div>
+        `).join("")
+      : `<div class="rank-row"><span>لا توجد بيانات بعد</span></div>`;
+
+    document.getElementById("content").innerHTML = `
+      <div class="container">
+        <div class="stats-row">
+          <div class="stat-box">
+            <div class="stat-value en">${totalOrders}</div>
+            <div class="stat-label">إجمالي الطلبات</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value en">${totalRevenue.toFixed(0)}</div>
+            <div class="stat-label">إجمالي المبيعات (د.ل)</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">أكثر المنتجات طلبًا (بالكمية)</div>
+          ${productRows}
+        </div>
+
+        <div class="section">
+          <div class="section-title">أكثر المدن طلبًا</div>
+          ${cityRows}
+        </div>
+
+        <div class="section">
+          <div class="section-title">الطلبات حسب الحالة</div>
+          ${statusRows}
+        </div>
+
+        <div class="section">
+          <div class="section-title">طرق الدفع</div>
+          <div class="rank-row"><span>الدفع عند الاستلام</span><span class="rank-value en">${codCount}</span></div>
+          <div class="rank-row"><span>تحويل مصرفي</span><span class="rank-value en">${bankCount}</span></div>
+        </div>
+      </div>
+    `;
+  }
+
+  load();
+</script>
+
+</body>
+</html>
