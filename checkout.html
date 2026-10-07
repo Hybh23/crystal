@@ -552,7 +552,7 @@
       const btn = document.getElementById("submitBtn");
 
       if (!cityId || !area) {
-        errMsg.textContent = "اختاري المدينة واكتبي المنطقة";
+        errMsg.textContent = "اختار المدينة واكتب المنطقة";
         return;
       }
 
@@ -602,7 +602,7 @@
           document.getElementById("shopName").value.trim();
 
         if (!name || !phone) {
-          errMsg.textContent = "املي الاسم والهاتف";
+          errMsg.textContent = "املى الاسم والهاتف";
           btn.disabled = false;
           btn.textContent = "تأكيد الطلب";
           return;
@@ -656,7 +656,7 @@
 
       if (!result || !result.result_order_number) {
         errMsg.textContent =
-          "تم إرسال الطلب، لكن تعذر قراءة رقم الطلب. تواصلي مع الإدارة.";
+          "تم إرسال الطلب، لكن تعذر قراءة رقم الطلب. تواصل مع الإدارة.";
 
         btn.disabled = false;
         btn.textContent = "تأكيد الطلب";
