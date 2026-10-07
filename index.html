@@ -59,6 +59,10 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
   border: none; cursor: pointer; white-space: nowrap;
 }
 .chip.active { background: var(--primary); color: #fff; font-weight: 700; }
+  .contact-chip {
+  background: #fff; color: var(--primary) !important; border: 1.5px solid var(--primary) !important;
+  text-decoration: none; display: inline-flex; align-items: center;
+}
 
 .grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -277,7 +281,8 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
   function renderChips(categories) {
     const bar = document.getElementById("categoryBar");
     const chips = [{ key: "all", label: "الكل" }, { key: "trending", label: "ترند" }, ...categories.map(c => ({ key: c.id, label: c.name }))];
-    bar.innerHTML = chips.map(c => `<button class="chip ${c.key === currentFilter ? 'active' : ''}" onclick="setFilter('${c.key}', this)">${c.label}</button>`).join("");
+    bar.innerHTML = chips.map(c => `<button class="chip ${c.key === currentFilter ? 'active' : ''}" onclick="setFilter('${c.key}', this)">${c.label}</button>`).join("")
+      + `<a href="contact.html" class="chip contact-chip">📍 تواصل معنا</a>`;
   }
 
   function setFilter(key, el) {
