@@ -68,7 +68,7 @@ button:disabled { opacity: 0.6; }
 
 <div class="form-box" id="formBox" style="display:none;">
   <label>اسم المنتج</label>
-  <input type="text" id="name" placeholder="مثلا: خاتم زاركون">
+  <input type="text" id="name" placeholder="مثلا: خاتم كارتير">
 
   <label>القسم</label>
   <select id="category"></select>
@@ -154,7 +154,7 @@ button:disabled { opacity: 0.6; }
     const btn = document.getElementById("saveBtn");
 
     if (!name || !price || files.length === 0 || !categoryId) {
-      msg.textContent = "املي الاسم والقسم والسعر واختاري صورة واحدة على الأقل";
+      msg.textContent = "املى الاسم والقسم والسعر واختار صورة وحدة على الأقل";
       msg.className = "msg err";
       return;
     }
