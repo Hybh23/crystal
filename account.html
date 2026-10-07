@@ -69,7 +69,7 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
     if (!session) {
       document.getElementById("content").innerHTML = `
         <div class="auth-prompt">
-          ما عندكش حساب مسجل حاليًا.<br>
+          ماعندكش حساب مسجل حاليًا.<br>
           <a href="customer-login.html">تسجيل الدخول أو إنشاء حساب</a>
         </div>
       `;
@@ -112,7 +112,7 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
           <div class="profile-meta">${customer?.phone || ""}</div>
           <div class="profile-meta">${session.user.email}</div>
         </div>
-        <div class="section-title">طلباتي السابقة</div>
+        <div class="section-title">الطلبات السابقة</div>
         ${ordersHtml}
       </div>
     `;
