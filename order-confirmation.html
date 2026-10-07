@@ -32,6 +32,11 @@ h2 { color: var(--text); margin-bottom: 14px; font-size: 1.2rem; }
 .order-num { font-size: 1.3rem; font-weight: 800; color: var(--primary); margin-bottom: 14px; font-family: 'Inter'; }
 .row { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 8px; color: var(--muted); }
 .note { font-size: 0.82rem; color: var(--warning); background: #E1F1F2; padding: 10px; border-radius: var(--r-md); margin-top: 14px; }
+.whatsapp-btn {
+  display: block; margin-top: 10px; background: #25D366; color: #fff;
+  padding: 12px; border-radius: var(--r-md); text-decoration: none;
+  font-weight: 700; font-size: 0.88rem;
+}
 .back-link { display: block; margin-top: 18px; color: var(--primary); text-decoration: none; font-weight: 700; }
 </style>
 </head>
@@ -56,8 +61,12 @@ h2 { color: var(--text); margin-bottom: 14px; font-size: 1.2rem; }
     <div class="row"><span>الإجمالي</span><span class="en">${total ? parseFloat(total).toFixed(2) + " د.ل" : "—"}</span></div>
     <div class="row"><span>طريقة الدفع</span><span>${methodLabel}</span></div>
     <div class="row"><span>حالة الطلب</span><span>${statusLabel}</span></div>
-    ${method === "bank_transfer" ? `<div class="note">لا تنسى إرسال صورة إيصال التحويل مع رقم طلبك عبر واتساب لتأكيد الدفع.</div>` : ""}
-    <a href="index.html" class="back-link">← رجوع للمنتجات</a>
+    ${method === "bank_transfer" ? `
+      <div class="note">لا تنسى إرسال صورة إيصال التحويل عبر واتساب لتأكيد الدفع.</div>
+      <a href="https://wa.me/218920900011?text=${encodeURIComponent('مرحبًا، هذا إيصال تحويل طلب رقم #' + orderNumber + ' بمبلغ ' + (total ? parseFloat(total).toFixed(2) : '') + ' د.ل')}" target="_blank" class="whatsapp-btn">
+        إرسال الإيصال عبر واتساب
+      </a>
+    ` : ""}    <a href="index.html" class="back-link">← رجوع للمنتجات</a>
   `;
 </script>
 
