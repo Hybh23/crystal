@@ -46,3 +46,313 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
 .icon-group { display: flex; align-items: center; gap: 12px; }
 .icon-btn { position: relative; color: #fff; background: none; border: none; cursor: pointer; padding: 0; text-decoration: none; }
 .icon-btn svg { width: 22px; height: 22px; display: block; }
+.icon-btn.active-bell svg { fill: #fff; }
+.count-dot {
+  position: absolute; top: -5px; left: -6px; background: #fff; color: var(--primary);
+  font-size: 0.6rem; font-weight: 800; border-radius: 999px; min-width: 15px; height: 15px;
+  display: flex; align-items: center; justify-content: center; padding: 0 3px;
+}
+
+.category-bar {
+  display: flex; gap: 8px; overflow-x: auto; padding: 10px 14px;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  -ms-overflow-style: none; scrollbar-width: none;
+}
+.category-bar::-webkit-scrollbar { display: none; }
+.chip {
+  flex-shrink: 0; padding: 7px 15px; border-radius: 999px; font-size: 0.78rem;
+  font-family: 'Tajawal'; background: var(--n100); color: var(--muted);
+  border: none; cursor: pointer; white-space: nowrap;
+}
+.chip.active { background: var(--primary); color: #fff; font-weight: 700; }
+  .contact-chip {
+  background: #fff; color: var(--primary) !important; border: 1.5px solid var(--primary) !important;
+  text-decoration: none; display: inline-flex; align-items: center;
+}
+
+.grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px; padding: 14px;
+}
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+  overflow: hidden; box-shadow: var(--sh-sm); display: flex; flex-direction: column;
+  text-decoration: none; color: var(--text); position: relative;
+}
+.card-img-wrap { position: relative; }
+.card img { width: 100%; height: 130px; object-fit: cover; background: var(--n100); display: block; }
+.trend-tag {
+  position: absolute; top: 8px; right: 8px; background: var(--primary); color: #fff;
+  font-size: 0.65rem; font-weight: 700; padding: 3px 9px; border-radius: 999px;
+}
+.low-tag {
+  position: absolute; top: 8px; left: 8px; background: var(--warning); color: #fff;
+  font-size: 0.6rem; font-weight: 700; padding: 3px 8px; border-radius: 999px;
+}
+.fav-btn {
+  position: absolute; bottom: 8px; left: 8px; width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(255,255,255,0.92); border: none; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; box-shadow: var(--sh-sm);
+}
+.fav-btn svg { width: 15px; height: 15px; stroke: var(--primary); fill: none; }
+.fav-btn.active svg { fill: var(--primary); }
+.quick-add-btn {
+  position: absolute; bottom: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%;
+  background: var(--primary); border: none; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; box-shadow: var(--sh-sm);
+}
+.quick-add-btn svg { width: 15px; height: 15px; stroke: #fff; }
+.card-body { padding: 10px; flex: 1; display: flex; flex-direction: column; }
+.card-body h3 { font-size: 0.88rem; margin-bottom: 4px; font-weight: 700; }
+.price { color: var(--primary); font-weight: 800; font-size: 0.92rem; margin-top: auto; }
+.unit { color: var(--muted); font-size: 0.72rem; }
+.loading, .empty { text-align: center; padding: 50px 20px; color: var(--muted); grid-column: 1/-1; }
+.toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: var(--text); color: #fff; padding: 10px 18px; border-radius: 999px;
+  font-size: 0.82rem; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 999;
+}
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="sticky-top">
+  <header class="site-header">
+    <div class="header-top">
+      <div class="brand">
+        <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 3h12l3 5-9 13L3 8z"/>
+          <path d="M3 8h18"/>
+          <path d="M9 3l-2 5 5 13 5-13-2-5"/>
+        </svg>
+        <div class="brand-text">
+          <span class="wordmark en">CRYSTAL</span>
+          <span class="brand-ar">كرستال</span>
+        </div>
+      </div>
+      <div class="icon-group">
+        <a href="account.html" class="icon-btn" title="حسابي">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>
+          </svg>
+        </a>
+        <a href="favorites.html" class="icon-btn" title="المفضلة">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.8 4.6a5 5 0 00-7.1 0L12 6.3l-1.7-1.7a5 5 0 00-7.1 7.1l1.7 1.7L12 20.6l7.1-7.1 1.7-1.7a5 5 0 000-7.1z"/>
+          </svg>
+          <span class="count-dot" id="favCount" style="display:none;">0</span>
+        </a>
+        <button class="icon-btn" id="bellBtn" title="تفعيل الإشعارات" onclick="toggleBell()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.7 21a2 2 0 01-3.4 0"/>
+          </svg>
+        </button>
+        <a href="cart.html" class="icon-btn" title="السلة">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/>
+            <path d="M3 4h2l2.4 12.4a2 2 0 002 1.6h8.2a2 2 0 002-1.6L21 8H6"/>
+          </svg>
+          <span class="count-dot" id="cartCount" style="display:none;">0</span>
+        </a>
+      </div>
+    </div>
+    <div class="slogan">جودة تلمع، ثقة تدوم</div>
+    <div class="tagline">اكسسوارات بالجملة والقطعة</div>  
+   </header>
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="ابحث عن منتج..." oninput="handleSearch(this.value)">
+  </div>
+  <div class="category-bar" id="categoryBar"></div>
+</div>
+
+<div id="productsGrid" class="grid">
+  <div class="loading">جاري تحميل المنتجات...</div>
+</div>
+
+<div class="toast" id="toast">تمت الإضافة للسلة ✓</div>
+
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://ptahgriuztxqsegkueln.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const CART_KEY = "crystal_cart";
+  const FAV_KEY = "crystal_favorites";
+  let allProducts = [];
+  let currentFilter = "all";
+  let searchText = "";
+  function handleSearch(value) { searchText = value.trim().toLowerCase(); renderGrid(); }
+  function getCart() { try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch { return []; } }
+  function saveCart(cart) { localStorage.setItem(CART_KEY, JSON.stringify(cart)); updateCartBadge(); }
+  function getFavs() { try { return JSON.parse(localStorage.getItem(FAV_KEY)) || []; } catch { return []; } }
+  function saveFavs(favs) { localStorage.setItem(FAV_KEY, JSON.stringify(favs)); updateFavBadge(); }
+
+  function updateCartBadge() {
+    const cart = getCart();
+    const total = cart.reduce((s, i) => s + i.quantity, 0);
+    const el = document.getElementById("cartCount");
+    el.textContent = total;
+    el.style.display = total > 0 ? "flex" : "none";
+  }
+  function updateFavBadge() {
+    const favs = getFavs();
+    const el = document.getElementById("favCount");
+    el.textContent = favs.length;
+    el.style.display = favs.length > 0 ? "flex" : "none";
+  }
+
+  function showToast(text) {
+    const toast = document.getElementById("toast");
+    toast.textContent = text;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 1500);
+  }
+
+  function toggleFav(productId, btnEl) {
+    let favs = getFavs();
+    if (favs.includes(productId)) {
+      favs = favs.filter(id => id !== productId);
+      btnEl.classList.remove("active");
+    } else {
+      favs.push(productId);
+      btnEl.classList.add("active");
+    }
+    saveFavs(favs);
+  }
+
+  function quickAdd(product) {
+    if (product.hasColors) {
+      window.location.href = `product.html?id=${product.id}`;
+      return;
+    }
+    const cart = getCart();
+    const existing = cart.find(i => i.product_id === product.id && !i.color);
+    if (existing) existing.quantity += 1;
+    else cart.push({
+      product_id: product.id, name: product.name, price: product.price,
+      sale_unit: product.sale_unit, color: null, quantity: 1, image: product.image
+    });
+    saveCart(cart);
+    showToast("تمت الإضافة للسلة ✓");
+  }
+
+  // ===== الإشعارات =====
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({ appId: "c8318950-edb6-4899-bc3b-19189079f1d0" });
+    refreshBell(OneSignal);
+    OneSignal.Notifications.addEventListener("permissionChange", () => refreshBell(OneSignal));
+    window._oneSignal = OneSignal;
+  });
+
+  function refreshBell(OneSignal) {
+    const btn = document.getElementById("bellBtn");
+    if (OneSignal.Notifications.permission) btn.classList.add("active-bell");
+    else btn.classList.remove("active-bell");
+  }
+
+  async function toggleBell() {
+    const OneSignal = window._oneSignal;
+    if (!OneSignal) return;
+    if (OneSignal.Notifications.permission) {
+      await OneSignal.User.PushSubscription.optOut();
+      showToast("تم إيقاف الإشعارات");
+    } else {
+      await OneSignal.Notifications.requestPermission();
+      showToast("تم تفعيل الإشعارات ✓");
+    }
+    refreshBell(OneSignal);
+  }
+
+  async function init() {
+    updateCartBadge();
+    updateFavBadge();
+
+    const { data: categories } = await supabaseClient.from("categories").select("id, name").eq("active", true).order("sort_order");
+    const { data: products, error } = await supabaseClient
+      .from("products")
+      .select(`id, name, price, sale_unit, is_trending, low_stock, category_id, product_images ( image_url, sort_order ), product_colors ( color_name, active )`)
+      .eq("active", true)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      document.getElementById("productsGrid").innerHTML = `<div class="empty">صار خطأ: ${error.message}</div>`;
+      return;
+    }
+
+    allProducts = products || [];
+    renderChips(categories || []);
+    renderGrid();
+  }
+
+  function renderChips(categories) {
+    const bar = document.getElementById("categoryBar");
+    const chips = [{ key: "all", label: "الكل" }, { key: "trending", label: "ترند" }, ...categories.map(c => ({ key: c.id, label: c.name }))];
+    bar.innerHTML = chips.map(c => `<button class="chip ${c.key === currentFilter ? 'active' : ''}" onclick="setFilter('${c.key}', this)">${c.label}</button>`).join("")
+      + `<a href="contact.html" class="chip contact-chip">📍 تواصل معنا</a>`;
+  }
+
+  function setFilter(key, el) {
+    currentFilter = key;
+    document.querySelectorAll(".chip").forEach(chip => chip.classList.remove("active"));
+    el.classList.add("active");
+    renderGrid();
+  }
+
+  function renderGrid() {
+    const grid = document.getElementById("productsGrid");
+    const favs = getFavs();
+
+    let filtered;
+    if (currentFilter === "all") filtered = allProducts;
+    else if (currentFilter === "trending") filtered = allProducts.filter(p => p.is_trending);
+    else filtered = allProducts.filter(p => p.category_id === currentFilter);
+
+    if (searchText) {
+      filtered = filtered.filter(p => p.name.toLowerCase().includes(searchText));
+    }
+
+    if (filtered.length === 0) {
+      grid.innerHTML = `<div class="empty">لا توجد منتجات في هذا القسم حاليًا</div>`;
+      return;
+    }
+
+    grid.innerHTML = filtered.map(p => {
+      const images = (p.product_images || []).sort((a,b) => a.sort_order - b.sort_order);
+      const img = images[0]?.image_url || "https://via.placeholder.com/300x300?text=No+Image";
+      const unitLabel = p.sale_unit === "dozen" ? "دستة" : "قطعة";
+      const hasColors = (p.product_colors || []).filter(c => c.active).length > 0;
+      const isFav = favs.includes(p.id);
+      const productData = JSON.stringify({ id: p.id, name: p.name, price: p.price, sale_unit: p.sale_unit, image: img, hasColors }).replace(/'/g, "&apos;");
+
+      return `
+        <a href="product.html?id=${p.id}" class="card">
+          <div class="card-img-wrap">
+            ${p.is_trending ? `<span class="trend-tag">ترند</span>` : ""}
+            ${p.low_stock ? `<span class="low-tag">آخر القطع</span>` : ""}
+            <img src="${img}" alt="${p.name}">
+            <button class="fav-btn ${isFav ? 'active' : ''}" onclick="event.preventDefault(); toggleFav('${p.id}', this)">
+              <svg viewBox="0 0 24 24" stroke-width="2"><path d="M20.8 4.6a5 5 0 00-7.1 0L12 6.3l-1.7-1.7a5 5 0 00-7.1 7.1l1.7 1.7L12 20.6l7.1-7.1 1.7-1.7a5 5 0 000-7.1z"/></svg>
+            </button>
+            <button class="quick-add-btn" onclick='event.preventDefault(); quickAdd(${productData})'>
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+          </div>
+          <div class="card-body">
+            <h3>${p.name}</h3>
+            <div class="price"><span class="en">${p.price}</span> د.ل <span class="unit">/ ${unitLabel}</span></div>
+          </div>
+        </a>
+      `;
+    }).join("");
+  }
+
+  init();
+</script>
+
+</body>
+</html>
