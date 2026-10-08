@@ -30,11 +30,11 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
   clip-path: polygon(0 0, 100% 0, 100% 86%, 50% 100%, 0 86%);
 }
 .header-top { display: flex; justify-content: space-between; align-items: center; }
-.brand { display: flex; align-items: center; gap: 10px; }
-.logo-icon { width: 44px; height: 44px; flex-shrink: 0; }
-.brand-text { display: flex; flex-direction: column; line-height: 1.2; }
-.wordmark { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 2rem; letter-spacing: 2.5px; }
-.brand-ar { font-family: 'Tajawal'; font-weight: 700; font-size: 1.1rem; color: #F2E6C8; margin-top: 2px; }
+.brand { display: flex; align-items: center; gap: clamp(5px, 2vw, 10px); min-width: 0; }
+.logo-icon { width: clamp(28px, 8vw, 44px); height: clamp(28px, 8vw, 44px); flex-shrink: 0; }
+.brand-text { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+.wordmark { font-family: 'Inter', sans-serif; font-weight: 800; font-size: clamp(1.2rem, 5.5vw, 2rem); letter-spacing: clamp(1px, 0.5vw, 2.5px); white-space: nowrap; }
+.brand-ar { font-family: 'Tajawal'; font-weight: 700; font-size: clamp(0.75rem, 3vw, 1.1rem); color: #F2E6C8; margin-top: 2px; white-space: nowrap; }
 .slogan { text-align: center; font-size: 1rem; font-weight: 800; color: #fff; margin-top: 14px; }
 .tagline { text-align: center; font-size: 0.72rem; color: #F2E6C8; margin-top: 4px; }
 .search-bar { background: var(--surface); padding: 10px 14px 0; }
@@ -43,9 +43,9 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
   font-size: 0.85rem; font-family: 'Tajawal'; background: var(--n100);
 }
 .search-bar input:focus { outline: none; border-color: var(--primary); background: var(--surface); }
-.icon-group { display: flex; align-items: center; gap: 12px; }
+.icon-group { display: flex; align-items: center; gap: clamp(6px, 2vw, 12px); flex-shrink: 0; }
 .icon-btn { position: relative; color: #fff; background: none; border: none; cursor: pointer; padding: 0; text-decoration: none; }
-.icon-btn svg { width: 22px; height: 22px; display: block; }
+.icon-btn svg { width: clamp(18px, 5vw, 22px); height: clamp(18px, 5vw, 22px); display: block; }
 .icon-btn.active-bell svg { fill: #fff; }
 .count-dot {
   position: absolute; top: -5px; left: -6px; background: #fff; color: var(--primary);
