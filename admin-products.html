@@ -65,7 +65,9 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
 </header>
 
 <div class="container">
-  <a href="admin-add-product.html" class="add-link">+ إضافة منتج جديد</a>
+   <a href="admin-add-product.html" class="add-link">+ إضافة منتج جديد</a>
+  <input type="text" id="searchInput" placeholder="ابحث باسم المنتج..." oninput="filterProducts(this.value)"
+    style="width:100%; padding:11px; margin-bottom:14px; border:1.5px solid var(--border); border-radius:var(--r-md); font-size:0.88rem; font-family:'Tajawal';">
   <div id="list" class="loading">جاري تحميل المنتجات...</div>
 </div>
 
@@ -80,7 +82,15 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
     if (!session) { window.location.href = "admin-login.html"; return false; }
     return true;
   }
+  
+  let allProductsCache = [];
 
+  function filterProducts(text) {
+    const q = text.trim().toLowerCase();
+    const filtered = q ? allProductsCache.filter(p => p.name.toLowerCase().includes(q)) : allProductsCache;
+    renderProductList(filtered);
+  }
+  
   async function loadProducts() {
     const ok = await checkAuth();
     if (!ok) return;
@@ -99,6 +109,18 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
 
     if (!products || products.length === 0) {
       list.innerHTML = `<div class="empty">لا توجد منتجات بعد</div>`;
+      return;
+    }
+
+    allProductsCache = products;
+    renderProductList(products);
+  }
+
+  function renderProductList(products) {
+    const list = document.getElementById("list");
+
+    if (products.length === 0) {
+      list.innerHTML = `<div class="empty">لا توجد نتائج لبحثك</div>`;
       return;
     }
 
