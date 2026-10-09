@@ -66,8 +66,10 @@ h2 { color: var(--text); margin-bottom: 14px; font-size: 1.2rem; }
       <a href="https://wa.me/218920900011?text=${encodeURIComponent('مرحبًا، هذا إيصال تحويل طلب رقم #' + orderNumber + ' بمبلغ ' + (total ? parseFloat(total).toFixed(2) : '') + ' د.ل')}" target="_blank" class="whatsapp-btn">
         إرسال الإيصال عبر واتساب
       </a>
-    ` : ""}    <a href="index.html" class="back-link">← رجوع للمنتجات</a>
-  `;
+    ` : ""}    
+    <a href="order-status.html?order=${orderNumber}" class="back-link">تتبع حالة طلبي ←</a>
+    <br><br>
+    <a href="index.html" style="color:var(--muted); font-size:0.8rem; text-decoration:none;">رجوع للمنتجات</a>  `;
 </script>
 
 </body>
