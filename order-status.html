@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تتبع الطلب | كرستال</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF9F4;--surface:#ffffff;--text:#241F17;--muted:#79705F;--border:#E7E0D0;
+  --primary:#A9822A;--n100:#F7F3E9;--success:#2E7D32;--warning:#0E7C86;--error:#DC2626;
+  --r-md:8px;--r-lg:12px;--sh-sm:0 1px 2px rgba(16,24,40,.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color: var(--text); }
+.en { font-family: 'Inter'; direction: ltr; unicode-bidi: isolate; }
+.site-header { background: var(--primary); color: #fff; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+.wordmark { font-family: 'Inter'; font-weight: 800; letter-spacing: 1.5px; }
+.back-link { color: #fff; text-decoration: none; font-size: 1.2rem; width: 24px; }
+
+.container { max-width: 420px; margin: 24px auto; padding: 0 16px; }
+.search-box { display: flex; gap: 8px; margin-bottom: 18px; }
+.search-box input {
+  flex: 1; padding: 11px; border: 1.5px solid var(--border); border-radius: var(--r-md);
+  font-size: 0.9rem; font-family: 'Inter'; direction: ltr; text-align: right;
+}
+.search-box button {
+  padding: 11px 16px; background: var(--primary); color: #fff; border: none;
+  border-radius: var(--r-md); font-weight: 700; font-family: 'Tajawal'; cursor: pointer;
+}
+.result-box {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+  padding: 20px; text-align: center; box-shadow: var(--sh-sm);
+}
+.order-num { font-family: 'Inter'; font-weight: 800; color: var(--primary); font-size: 1.1rem; margin-bottom: 10px; }
+.badge { display: inline-block; font-size: 0.85rem; font-weight: 700; padding: 6px 16px; border-radius: 999px; margin-bottom: 14px; }
+.badge.pending_verification, .badge.new { background: #E1F1F2; color: var(--warning); }
+.badge.prepared, .badge.out_for_delivery { background: var(--n100); color: var(--primary); }
+.badge.delivered { background: #E7F4E8; color: var(--success); }
+.badge.cancelled { background: #FBEAEA; color: var(--error); }
+.total-row { font-size: 0.9rem; color: var(--muted); }
+.total-row b { color: var(--primary); font-family: 'Inter'; }
+.empty { text-align: center; padding: 30px 20px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="index.html" class="back-link">→</a>
+  <span class="wordmark">تتبع الطلب</span>
+  <span style="width:24px;"></span>
+</header>
+
+<div class="container">
+  <div class="search-box">
+    <input type="text" id="orderInput" placeholder="CR-1023">
+    <button onclick="search()">بحث</button>
+  </div>
+  <div id="result"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://ptahgriuztxqsegkueln.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const STATUS_LABEL = {
+    pending_verification: "بانتظار التأكيد", new: "طلب جديد", prepared: "تم التجهيز",
+    out_for_delivery: "قيد التوصيل", delivered: "تم التسليم", cancelled: "ملغى"
+  };
+
+  async function search() {
+    const orderNumber = document.getElementById("orderInput").value.trim();
+    const result = document.getElementById("result");
+    if (!orderNumber) return;
+
+    result.innerHTML = `<div class="empty">جاري البحث...</div>`;
+
+    const { data, error } = await supabaseClient.rpc("get_order_status_public", { p_order_number: orderNumber });
+
+    if (error || !data || data.length === 0) {
+      result.innerHTML = `<div class="empty">لم يتم إيجاد طلب بهذا الرقم</div>`;
+      return;
+    }
+
+    const order = data[0];
+    const dateStr = new Date(order.created_at).toLocaleDateString("ar-LY", { dateStyle: "medium" });
+
+    result.innerHTML = `
+      <div class="result-box">
+        <div class="order-num">#${order.order_number}</div>
+        <div class="badge ${order.status}">${STATUS_LABEL[order.status] || order.status}</div>
+        <div class="total-row">الإجمالي: <b>${order.grand_total}</b> د.ل</div>
+        <div class="total-row">${dateStr}</div>
+      </div>
+    `;
+  }
+
+  window.onload = function() {
+    const params = new URLSearchParams(window.location.search);
+    const orderParam = params.get("order");
+    if (orderParam) {
+      document.getElementById("orderInput").value = orderParam;
+      search();
+    }
+  };
+</script>
+
+</body>
+</html>
