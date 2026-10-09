@@ -52,8 +52,8 @@ button.submit:disabled { opacity: 0.6; }
   </div>
 
   <div class="box" id="loginBox">
-    <label>البريد الإلكتروني</label>
-    <input type="email" id="loginEmail">
+    <label>رقم الهاتف</label>
+    <input type="tel" id="loginPhone" placeholder="0911234567">
     <label>كلمة السر</label>
     <input type="password" id="loginPassword">
     <button class="submit" id="loginBtn" onclick="login()">دخول</button>
@@ -64,8 +64,6 @@ button.submit:disabled { opacity: 0.6; }
     <input type="text" id="signupName">
     <label>رقم الهاتف</label>
     <input type="tel" id="signupPhone" placeholder="0911234567">
-    <label>البريد الإلكتروني</label>
-    <input type="email" id="signupEmail">
     <label>كلمة السر</label>
     <input type="password" id="signupPassword" placeholder="6 أحرف على الأقل">
     <button class="submit" id="signupBtn" onclick="signup()">إنشاء الحساب</button>
@@ -83,6 +81,19 @@ button.submit:disabled { opacity: 0.6; }
 
   const LY_PHONE_REGEX = /^(?:\+218|00218|0)9[1-5][0-9]{7}$/;
 
+  function normalizePhone(rawPhone) {
+    let phone = rawPhone.replace(/[\s-]/g, "");
+
+    if (phone.startsWith("+218")) phone = "0" + phone.slice(4);
+    else if (phone.startsWith("00218")) phone = "0" + phone.slice(5);
+
+    return phone;
+  }
+
+  function phoneToEmail(phone) {
+    return phone + "@crystalstore.ly";
+  }
+
   function switchTab(tab) {
     document.getElementById("loginTab").classList.toggle("active", tab === "login");
     document.getElementById("signupTab").classList.toggle("active", tab === "signup");
@@ -95,12 +106,18 @@ button.submit:disabled { opacity: 0.6; }
   const redirectTo = params.get("redirect") || "index.html";
 
   async function login() {
-    const email = document.getElementById("loginEmail").value.trim();
+    const rawPhone = document.getElementById("loginPhone").value.trim();
     const password = document.getElementById("loginPassword").value;
     const err = document.getElementById("errMsg");
     const btn = document.getElementById("loginBtn");
 
-    if (!email || !password) { err.textContent = "أدخل البريد وكلمة السر"; return; }
+    if (!rawPhone || !password) { err.textContent = "أدخل رقم الهاتف وكلمة السر"; return; }
+
+    const phone = normalizePhone(rawPhone);
+
+    if (!LY_PHONE_REGEX.test(phone)) { err.textContent = "رقم الهاتف غير صحيح"; return; }
+
+    const email = phoneToEmail(phone);
 
     btn.disabled = true;
     btn.textContent = "جاري الدخول...";
@@ -108,7 +125,7 @@ button.submit:disabled { opacity: 0.6; }
     const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
     if (error) {
-      err.textContent = "خطأ: " + error.message;
+      err.textContent = "رقم الهاتف أو كلمة السر غير صحيحة";
       btn.disabled = false;
       btn.textContent = "دخول";
       return;
@@ -119,21 +136,25 @@ button.submit:disabled { opacity: 0.6; }
 
   async function signup() {
     const name = document.getElementById("signupName").value.trim();
-    const phone = document.getElementById("signupPhone").value.trim();
-    const email = document.getElementById("signupEmail").value.trim();
+    const rawPhone = document.getElementById("signupPhone").value.trim();
     const password = document.getElementById("signupPassword").value;
     const err = document.getElementById("errMsg");
     const btn = document.getElementById("signupBtn");
 
-    if (!name || !phone || !email || !password) { err.textContent = "املئ كل الحقول"; return; }
-    if (!LY_PHONE_REGEX.test(phone.replace(/[\s-]/g, ""))) { err.textContent = "رقم الهاتف غير صحيح"; return; }
+    if (!name || !rawPhone || !password) { err.textContent = "املئ كل الحقول"; return; }
+
+    const phone = normalizePhone(rawPhone);
+
+    if (!LY_PHONE_REGEX.test(phone)) { err.textContent = "رقم الهاتف غير صحيح"; return; }
     if (password.length < 6) { err.textContent = "كلمة السر يجب أن تكون 6 أحرف على الأقل"; return; }
+
+    const email = phoneToEmail(phone);
 
     btn.disabled = true;
     btn.textContent = "جاري الإنشاء...";
     err.textContent = "";
 
-        const { data, error } = await supabaseClient.auth.signUp({ email, password });
+    const { data, error } = await supabaseClient.auth.signUp({ email, password });
 
     if (error) {
       err.textContent = "خطأ: " + error.message;
@@ -143,7 +164,7 @@ button.submit:disabled { opacity: 0.6; }
     }
 
     if (data.user && data.user.identities && data.user.identities.length === 0) {
-      err.textContent = "هذا البريد مسجل مسبقًا. جرب تسجيل الدخول بدل إنشاء حساب جديد.";
+      err.textContent = "هذا الرقم مسجل مسبقًا. جرب تسجيل الدخول بدل إنشاء حساب جديد.";
       btn.disabled = false;
       btn.textContent = "إنشاء الحساب";
       return;
