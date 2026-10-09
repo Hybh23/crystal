@@ -133,10 +133,17 @@ button.submit:disabled { opacity: 0.6; }
     btn.textContent = "جاري الإنشاء...";
     err.textContent = "";
 
-    const { data, error } = await supabaseClient.auth.signUp({ email, password });
+        const { data, error } = await supabaseClient.auth.signUp({ email, password });
 
     if (error) {
       err.textContent = "خطأ: " + error.message;
+      btn.disabled = false;
+      btn.textContent = "إنشاء الحساب";
+      return;
+    }
+
+    if (data.user && data.user.identities && data.user.identities.length === 0) {
+      err.textContent = "هذا البريد مسجل مسبقًا. جرب تسجيل الدخول بدل إنشاء حساب جديد.";
       btn.disabled = false;
       btn.textContent = "إنشاء الحساب";
       return;
