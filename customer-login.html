@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>حسابي | كرستال</title>
+<title>تسجيل الدخول | كرستال</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
@@ -79,7 +79,7 @@ button.submit:disabled { opacity: 0.6; }
   const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  const LY_PHONE_REGEX = /^(?:\+218|00218|0)9[1-5][0-9]{7}$/;
+  const LY_PHONE_REGEX = /^(?:\+218|00218|0)9[1-4][0-9]{7}$/;
 
   function normalizePhone(rawPhone) {
     let phone = rawPhone.replace(/[\s-]/g, "");
@@ -125,7 +125,9 @@ button.submit:disabled { opacity: 0.6; }
     const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
     if (error) {
-      err.textContent = "رقم الهاتف أو كلمة السر غير صحيحة";
+      err.textContent = /not confirmed/i.test(error.message)
+        ? "الحساب هذا مش مفعّل. تواصل مع المحل عشان يفعّلوه."
+        : "رقم الهاتف أو كلمة السر غير صحيحة";
       btn.disabled = false;
       btn.textContent = "دخول";
       return;
@@ -154,7 +156,8 @@ button.submit:disabled { opacity: 0.6; }
     btn.textContent = "جاري الإنشاء...";
     err.textContent = "";
 
-    const { data, error } = await supabaseClient.auth.signUp({ email, password });
+    // الاسم يتبعت كـ metadata، وتريقر على auth.users يعمل صف customers تلقائيًا
+    const { data, error } = await supabaseClient.auth.signUp({ email, password, options: { data: { name } } });
 
     if (error) {
       err.textContent = "خطأ: " + error.message;
@@ -170,16 +173,36 @@ button.submit:disabled { opacity: 0.6; }
       return;
     }
 
-    const { error: customerError } = await supabaseClient.from("customers").insert({
-      auth_user_id: data.user.id,
-      name, phone, area: ""
-    });
+    // لو تأكيد الإيميل شغّال في Supabase ما يرجعش session، فنجربوا ندخلوه مباشرة
+    let session = data.session;
+    if (!session) {
+      const { data: signInData } = await supabaseClient.auth.signInWithPassword({ email, password });
+      session = signInData?.session || null;
+    }
 
-    if (customerError) {
-      err.textContent = "تم إنشاء الحساب، لكن صار خطأ بحفظ بياناتك: " + customerError.message;
+    if (!session) {
+      err.textContent = "تم إنشاء الحساب، لكن ما قدرناش ندخلك توا. جرب تسجيل الدخول بعد شوية أو تواصل مع المحل.";
       btn.disabled = false;
       btn.textContent = "إنشاء الحساب";
       return;
+    }
+
+    // احتياط: لو التريقر ما عملش صف الزبون، نعملوه من هنا
+    const { data: existing } = await supabaseClient
+      .from("customers").select("id").eq("auth_user_id", session.user.id).maybeSingle();
+
+    if (!existing) {
+      const { error: customerError } = await supabaseClient.from("customers").insert({
+        auth_user_id: session.user.id,
+        name, phone, area: ""
+      });
+
+      if (customerError) {
+        err.textContent = "تم إنشاء الحساب، لكن صار خطأ بحفظ بياناتك: " + customerError.message;
+        btn.disabled = false;
+        btn.textContent = "إنشاء الحساب";
+        return;
+      }
     }
 
     window.location.href = redirectTo;

@@ -48,6 +48,11 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+  // تنظيف أي قيمة قبل حقنها في HTML (حماية من XSS)
+  function esc(value) {
+    return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+  }
+
   const SUPABASE_URL = "https://ptahgriuztxqsegkueln.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -57,9 +62,15 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
     out_for_delivery: "قيد التوصيل", delivered: "تم التسليم", cancelled: "ملغى"
   };
 
+  // حسابات الزبائن إيميلها وهمي على شكل 09XXXXXXXX@crystalstore.ly، وما عندهاش صلاحية الإدارة
+  function isCustomerSession(session) {
+    return /^0\d{9}@crystalstore\.ly$/i.test(session?.user?.email || "");
+  }
+
   async function checkAuth() {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) { window.location.href = "admin-login.html"; return false; }
+    if (isCustomerSession(session)) { window.location.href = "index.html"; return false; }
     return true;
   }
 
@@ -110,7 +121,7 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
     const statusRows = Object.entries(statusCounts)
       .map(([status, count]) => `
         <div class="rank-row">
-          <span>${STATUS_LABEL[status] || status}</span>
+          <span>${esc(STATUS_LABEL[status] || status)}</span>
           <span class="rank-value en">${count}</span>
         </div>
       `).join("") || `<div class="rank-row"><span>لا توجد بيانات</span></div>`;
@@ -118,7 +129,7 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
     const cityRows = topCities.length > 0
       ? topCities.map(([name, count], i) => `
           <div class="rank-row">
-            <span class="rank-name"><span class="rank-badge">${i + 1}</span>${name}</span>
+            <span class="rank-name"><span class="rank-badge">${i + 1}</span>${esc(name)}</span>
             <span class="rank-value en">${count} طلب</span>
           </div>
         `).join("")
@@ -127,7 +138,7 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
     const productRows = topProducts.length > 0
       ? topProducts.map(([name, qty], i) => `
           <div class="rank-row">
-            <span class="rank-name"><span class="rank-badge">${i + 1}</span>${name}</span>
+            <span class="rank-name"><span class="rank-badge">${i + 1}</span>${esc(name)}</span>
             <span class="rank-value en">${qty}</span>
           </div>
         `).join("")

@@ -84,8 +84,13 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
 <div class="container" id="container"></div>
 
 <script>
+  // تنظيف أي قيمة قبل حقنها في HTML (حماية من XSS)
+  function esc(value) {
+    return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+  }
+
   const CART_KEY = "crystal_cart";
-  const MIN_ORDER = 300;
+  const MIN_ORDER = 300; // نفس القيمة في checkout.html
 
   function getCart() {
     try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
@@ -142,10 +147,10 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
 
       return `
         <div class="item">
-          <img src="${item.image}" alt="${item.name}">
+          <img src="${esc(item.image)}" alt="${esc(item.name)}">
           <div class="item-info">
-            <h3>${item.name}</h3>
-            <div class="meta">${item.color ? "اللون: " + item.color + " — " : ""}<span class="en">${item.price}</span> د.ل / ${unitLabel}</div>
+            <h3>${esc(item.name)}</h3>
+            <div class="meta">${item.color ? "اللون: " + esc(item.color) + " — " : ""}<span class="en">${esc(item.price)}</span> د.ل / ${unitLabel}</div>
             <div class="qty-row">
               <div class="qty-stepper">
                 <button type="button" onclick="stepQty(${index}, -1)">−</button>
@@ -169,7 +174,7 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
           <span>إجمالي المنتجات</span>
           <span class="en">${subtotal.toFixed(2)} د.ل</span>
         </div>
-        ${belowMin ? `<div class="min-warning">أضيف ${remaining} د.ل أخرى من المنتجات لإكمال الحد الأدنى للطلب (300 د.ل).</div>` : ""}
+        ${belowMin ? `<div class="min-warning">أضيف ${remaining} د.ل أخرى من المنتجات لإكمال الحد الأدنى للطلب (${MIN_ORDER} د.ل).</div>` : ""}
         <a href="checkout.html" class="checkout-btn ${belowMin ? 'disabled' : ''}">
           ${belowMin ? "أكمل الحد الأدنى الاول" : "متابعة الطلب"}
         </a>

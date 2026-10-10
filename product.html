@@ -96,6 +96,11 @@ h1 { font-size: 1.15rem; margin-bottom: 6px; }
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+  // تنظيف أي قيمة قبل حقنها في HTML (حماية من XSS)
+  function esc(value) {
+    return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+  }
+
   const SUPABASE_URL = "https://ptahgriuztxqsegkueln.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -154,28 +159,28 @@ h1 { font-size: 1.15rem; margin-bottom: 6px; }
     const hasColors = activeColors.length > 0;
 
     const colorOptions = hasColors
-      ? `<option value="">اختاري لون</option>` + activeColors.map(c => `<option value="${c.color_name}">${c.color_name}</option>`).join("")
+      ? `<option value="">اختاري لون</option>` + activeColors.map(c => `<option value="${esc(c.color_name)}">${esc(c.color_name)}</option>`).join("")
       : "";
 
     const thumbsHtml = currentImages.length > 1
       ? `<div class="thumb-row" id="thumbRow">${currentImages.map((img, i) =>
-          `<img src="${img.image_url}" class="${i === 0 ? 'active' : ''}" onclick="setMainImage(${i})">`
+          `<img src="${esc(img.image_url)}" class="${i === 0 ? 'active' : ''}" onclick="setMainImage(${i})">`
         ).join("")}</div>`
       : "";
 
     document.getElementById("content").innerHTML = `
       <div class="container">
-        <img src="${currentImages[0].image_url}" class="main-img" id="mainImg" alt="${p.name}">
+        <img src="${esc(currentImages[0].image_url)}" class="main-img" id="mainImg" alt="${esc(p.name)}">
         ${thumbsHtml}
         <div class="content">
           <div class="tags">
-            ${p.categories ? `<span class="tag trend">${p.categories.name}</span>` : ""}
+            ${p.categories ? `<span class="tag trend">${esc(p.categories.name)}</span>` : ""}
             ${p.is_trending ? `<span class="tag trend">ترند</span>` : ""}
             ${p.low_stock ? `<span class="tag low">آخر القطع</span>` : ""}
           </div>
-          <h1>${p.name}</h1>
-          <div class="price-line"><span class="en">${p.price}</span> د.ل <span class="unit">/ ${unitLabel}</span></div>
-          ${p.description ? `<div class="description">${p.description}</div>` : ""}
+          <h1>${esc(p.name)}</h1>
+          <div class="price-line"><span class="en">${esc(p.price)}</span> د.ل <span class="unit">/ ${unitLabel}</span></div>
+          ${p.description ? `<div class="description">${esc(p.description)}</div>` : ""}
 
           <div class="box">
             ${hasColors ? `

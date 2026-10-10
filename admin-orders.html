@@ -86,6 +86,11 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+  // تنظيف أي قيمة قبل حقنها في HTML (حماية من XSS)
+  function esc(value) {
+    return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+  }
+
   const SUPABASE_URL = "https://ptahgriuztxqsegkueln.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -120,9 +125,15 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
   let currentTab = "all";
   let openDetails = {};
 
+  // حسابات الزبائن إيميلها وهمي على شكل 09XXXXXXXX@crystalstore.ly، وما عندهاش صلاحية الإدارة
+  function isCustomerSession(session) {
+    return /^0\d{9}@crystalstore\.ly$/i.test(session?.user?.email || "");
+  }
+
   async function checkAuth() {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) { window.location.href = "admin-login.html"; return false; }
+    if (isCustomerSession(session)) { window.location.href = "index.html"; return false; }
     return true;
   }
 
@@ -153,7 +164,7 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
       .order("created_at", { ascending: true });
 
     if (error) {
-      document.getElementById("list").innerHTML = `<div class="empty">خطأ: ${error.message}</div>`;
+      document.getElementById("list").innerHTML = `<div class="empty">خطأ: ${esc(error.message)}</div>`;
       return;
     }
 
@@ -186,20 +197,20 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
         <div class="order-card">
           <div class="o-top">
             <div>
-              <div class="o-number">#${o.order_number}</div>
+              <div class="o-number">#${esc(o.order_number)}</div>
               <div class="o-date">${dateStr}</div>
             </div>
-            <span class="badge ${o.status}">${STATUS_LABEL[o.status]}</span>
+            <span class="badge ${esc(o.status)}">${STATUS_LABEL[o.status]}</span>
           </div>
 
-          <div class="o-customer">${customer?.name || "—"}${customer?.shop_name ? " — " + customer.shop_name : ""}</div>
-          <div class="o-meta">${city?.name || ""} ${customer?.area ? "- " + customer.area : ""} · ${customer?.phone || ""}</div>
+          <div class="o-customer">${esc(customer?.name || "—")}${customer?.shop_name ? " — " + esc(customer.shop_name) : ""}</div>
+          <div class="o-meta">${esc(city?.name || "")} ${customer?.area ? "- " + esc(customer.area) : ""} · ${esc(customer?.phone || "")}</div>
           <div class="o-meta">طريقة الدفع: ${paymentLabel}</div>
 
           <div class="o-amounts">
-            <span>المنتجات: <b class="en">${o.products_subtotal}</b> د.ل</span>
-            <span>التوصيل: <b class="en">${o.shipping_fee}</b> د.ل</span>
-            <span>الإجمالي: <b class="en">${o.grand_total}</b> د.ل</span>
+            <span>المنتجات: <b class="en">${esc(o.products_subtotal)}</b> د.ل</span>
+            <span>التوصيل: <b class="en">${esc(o.shipping_fee)}</b> د.ل</span>
+            <span>الإجمالي: <b class="en">${esc(o.grand_total)}</b> د.ل</span>
           </div>
 
           <div class="toggle-link" onclick="toggleDetails('${o.id}')">${isOpen ? "إخفاء تفاصيل المنتجات" : "عرض تفاصيل المنتجات"}</div>
@@ -258,12 +269,12 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
 
       return `
         <div class="item-line">
-          <img src="${img}" class="item-thumb" alt="${item.product_name_snapshot}">
+          <img src="${esc(img)}" class="item-thumb" alt="${esc(item.product_name_snapshot)}">
           <div class="item-text">
-            <div>${item.product_name_snapshot}${item.color_name_snapshot ? " (" + item.color_name_snapshot + ")" : ""}</div>
-            <div class="item-sub">× <span class="en">${item.quantity}</span> ${unitLabel}</div>
+            <div>${esc(item.product_name_snapshot)}${item.color_name_snapshot ? " (" + esc(item.color_name_snapshot) + ")" : ""}</div>
+            <div class="item-sub">× <span class="en">${esc(item.quantity)}</span> ${unitLabel}</div>
           </div>
-          <span class="en item-total">${item.line_total} د.ل</span>
+          <span class="en item-total">${esc(item.line_total)} د.ل</span>
         </div>
       `;
     }).join("");
