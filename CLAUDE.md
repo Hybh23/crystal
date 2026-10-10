@@ -69,7 +69,7 @@
   - `checkout.html`: ياخذ `OneSignal.User.PushSubscription.id` ويبعثه كـ `p_push_subscription_id` لدالة إنشاء الطلب، عشان السيرفر يقدر يبعث تحديثات حالة الطلب لهذا الجهاز.
 - **الأدمن**: `admin.html` يحفظ الـ subscription id في جدول `admin_push_subscriptions` (upsert على `subscription_id`) عشان توصله إشعارات الطلبات الجديدة. الحفظ يصير مع حدث `PushSubscription` `change`، لأن رقم الاشتراك يوصل متأخر بعد الموافقة. وكلمة "مفعّلة" ما تظهرش إلا بعد ما الحفظ ينجح.
 - **نفس المتصفح للأدمن والزبون**: الموقع واحد، فاشتراك OneSignal واحد. لو الأدمن طفّى الجرس في `index.html`، تتوقف إشعاراته هو برضو.
-- **إرسال الإشعارات نفسه ما يصيرش من هذا الريبو**. يصير من جهة Supabase (trigger أو Edge Function أو webhook)، والكود هذا مش موجود هنا.
+- **إرسال الإشعارات نفسه ما يصيرش من الواجهة**. يصير من Supabase: إشعار الأدمن من التريقر `trg_notify_admins_new_order`، وإشعار الزبون من `admin_update_order_status`. الكود في `supabase/2026-10-12-notifications-and-contact.sql`.
 
 ## البيانات وتدفق الطلب
 
@@ -94,6 +94,13 @@
 - **الأدمن**: جدول `admin_users` ودالة `is_admin()`. كل قواعد RLS والدالة `admin_update_order_status` يعتمدوا عليهم. ما تعملش جدول أدمن ثاني.
 - **RLS**: القراءة العامة للمنتجات والأقسام والمدن والألوان المفعّلة بس. الكتابة عليهم للأدمن بس، والصور في bucket `product-images` كذلك. الزبون يشوف طلباته وبياناته بس.
 - **إشعار الزبون بتغيّر حالة طلبه**: يتبعت من داخل `admin_update_order_status` عن طريق `net.http_post` لـ OneSignal، والمفتاح محفوظ في Vault باسم `onesignal_rest_key`.
+  - النص عربي حتى في خانة `en`، لأن OneSignal يختار النص حسب لغة جهاز الزبون، وفيه رقم الطلب.
+  - ما يتبعتش لو الحالة ما تغيّرتش.
+- **إشعار الأدمن بالطلب الجديد**: التريقر `trg_notify_admins_new_order` على `orders` يبعت لكل الأجهزة في `admin_push_subscriptions` بس. لو الإرسال فشل، الطلب يتسجل عادي. التريقر القديم `trg_notify_new_order` كان يبعت لكل المشتركين حتى الزبائن، وتمسح. لا ترجّعه، ولا تستعمل `included_segments` في أي إشعار.
+- **أرقام التواصل لكل طلب**: الأعمدة `orders.contact_phone` و`contact_second_phone`.
+  - الزبون المسجّل يقدر يغيّرهم في `checkout.html` من غير ما يتغيّر رقم حسابه.
+  - `admin-orders.html` يعرضهم، ولو فاضيين (طلبات الضيوف) يعرض أرقام ملف الزبون.
+- **`supabase/2026-10-12-notifications-and-contact.sql`**: لازم يتشغّل **قبل** دمج تعديلات الواجهة اللي تستعمل `p_contact_phone` و`contact_phone`.
 - **`supabase/2026-10-10-harden-orders.sql`** (لازم يتشغّل يدويًا):
   - دوال الطلب تقرا السعر والاسم والوحدة من `products` وتتجاهل `unit_price` اللي يبعته المتصفح.
   - تتحقق من الكمية واللون ورقم الهاتف وطريقة الدفع.
