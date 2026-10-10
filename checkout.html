@@ -358,7 +358,30 @@
         ? `
           <div class="logged-customer">
             مسجّلة باسم <b>${esc(loggedInCustomer.name || "—")}</b>
-            — ${esc(loggedInCustomer.phone || "")}
+          </div>
+
+          <label>رقم الهاتف للتواصل في هذا الطلب *</label>
+          <input
+            type="tel"
+            id="phone"
+            value="${esc(loggedInCustomer.phone || "")}"
+            placeholder="مثال: 0911234567"
+            oninput="validatePhoneField('phone', 'phoneError')"
+          >
+          <div class="field-error" id="phoneError">
+            رقم غير صحيح. مثال صحيح: 0911234567
+          </div>
+
+          <label>رقم هاتف ثانٍ (اختياري)</label>
+          <input
+            type="tel"
+            id="secondPhone"
+            value="${esc(loggedInCustomer.second_phone || "")}"
+            placeholder="مثال: 0921234567"
+            oninput="validatePhoneField('secondPhone', 'secondPhoneError')"
+          >
+          <div class="field-error" id="secondPhoneError">
+            رقم غير صحيح. مثال صحيح: 0911234567
           </div>
         `
         : `
@@ -587,6 +610,23 @@
       let error;
 
       if (loggedInCustomer) {
+        const contactPhone = document.getElementById("phone").value.trim();
+        const contactSecondPhone = document.getElementById("secondPhone").value.trim();
+
+        if (!isValidLibyanPhone(contactPhone)) {
+          errMsg.textContent = "رقم الهاتف غير صحيح. مثال: 0911234567";
+          btn.disabled = false;
+          btn.textContent = "تأكيد الطلب";
+          return;
+        }
+
+        if (contactSecondPhone && !isValidLibyanPhone(contactSecondPhone)) {
+          errMsg.textContent = "رقم الهاتف الثاني غير صحيح";
+          btn.disabled = false;
+          btn.textContent = "تأكيد الطلب";
+          return;
+        }
+
         ({ data, error } = await supabaseClient.rpc(
           "create_customer_order",
           {
@@ -596,7 +636,9 @@
             p_notes: notes || null,
             p_payment_method: paymentMethod,
             p_items: items,
-            p_push_subscription_id: pushSubscriptionId
+            p_push_subscription_id: pushSubscriptionId,
+            p_contact_phone: contactPhone,
+            p_contact_second_phone: contactSecondPhone || null
           }
         ));
       } else {

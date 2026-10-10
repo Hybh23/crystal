@@ -158,7 +158,8 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
       .select(`
         id, order_number, status, payment_method, payment_status,
         products_subtotal, shipping_fee, grand_total, created_at,
-        customers ( name, phone, shop_name, area ),
+        contact_phone, contact_second_phone,
+        customers ( name, phone, second_phone, shop_name, area ),
         cities ( name )
       `)
       .order("created_at", { ascending: true });
@@ -186,6 +187,9 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
 
     list.innerHTML = filtered.map(o => {
       const customer = o.customers;
+      // أرقام الطلب نفسه (الزبون المسجّل يقدر يغيّرها) وإلا أرقام ملف الزبون
+      const phones = [o.contact_phone || customer?.phone, o.contact_phone ? o.contact_second_phone : customer?.second_phone]
+        .filter(Boolean).join(" / ");
       const city = o.cities;
       const action = MAIN_ACTION[o.status];
       const paymentLabel = o.payment_method === "bank_transfer" ? "تحويل مصرفي" : "دفع عند الاستلام";
@@ -204,7 +208,8 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
           </div>
 
           <div class="o-customer">${esc(customer?.name || "—")}${customer?.shop_name ? " — " + esc(customer.shop_name) : ""}</div>
-          <div class="o-meta">${esc(city?.name || "")} ${customer?.area ? "- " + esc(customer.area) : ""} · ${esc(customer?.phone || "")}</div>
+          <div class="o-meta">${esc(city?.name || "")} ${customer?.area ? "- " + esc(customer.area) : ""}</div>
+          <div class="o-meta">الهاتف: <span class="en">${esc(phones)}</span></div>
           <div class="o-meta">طريقة الدفع: ${paymentLabel}</div>
 
           <div class="o-amounts">
