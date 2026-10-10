@@ -228,7 +228,7 @@ begin
     body    := jsonb_build_object(
       'app_id', 'c8318950-edb6-4899-bc3b-19189079f1d0',
       'include_subscription_ids', v_ids,
-      'headings', jsonb_build_object('ar', 'عندك طلب جديد يا بيبي ✨', 'en', 'عندك طلب جديد يا بيبي ✨'),
+      'headings', jsonb_build_object('ar', 'وصلك طلب جديد يا بيبي 💋', 'en', 'وصلك طلب جديد يا بيبي 💋'),
       'contents', jsonb_build_object('ar', v_text, 'en', v_text),
       'url', 'https://crystalstore.ly/admin-orders.html'
     )
