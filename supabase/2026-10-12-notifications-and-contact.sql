@@ -216,7 +216,7 @@ begin
 
   select name into v_customer from customers where id = new.customer_id;
 
-  v_text := coalesce(v_customer, 'زبون') || ' | '
+  v_text := 'طلب #' || new.order_number || ' من ' || coalesce(v_customer, 'زبون') || ' | '
             || to_char(new.grand_total, 'FM999999990.00') || ' د.ل | '
             || case new.payment_method::text when 'bank_transfer' then 'تحويل مصرفي' else 'دفع عند الاستلام' end;
 
@@ -228,7 +228,7 @@ begin
     body    := jsonb_build_object(
       'app_id', 'c8318950-edb6-4899-bc3b-19189079f1d0',
       'include_subscription_ids', v_ids,
-      'headings', jsonb_build_object('ar', 'طلب جديد #' || new.order_number, 'en', 'طلب جديد #' || new.order_number),
+      'headings', jsonb_build_object('ar', 'عندك طلب جديد يا بيبي ✨', 'en', 'عندك طلب جديد يا بيبي ✨'),
       'contents', jsonb_build_object('ar', v_text, 'en', v_text),
       'url', 'https://crystalstore.ly/admin-orders.html'
     )
@@ -241,6 +241,12 @@ end;
 $$;
 
 revoke all on function public.notify_admins_new_order() from public, anon, authenticated;
+
+-- التريقر القديم كان يبعت لـ 'Subscribed Users'، يعني لكل المشتركين حتى
+-- الزبائن، وفيه اسم الزبون والمبلغ. ينمسح وينحط مكانه الجديد اللي يبعت
+-- لأجهزة الأدمن بس.
+drop trigger if exists trg_notify_new_order on public.orders;
+drop function if exists public.notify_new_order();
 
 drop trigger if exists trg_notify_admins_new_order on public.orders;
 create trigger trg_notify_admins_new_order

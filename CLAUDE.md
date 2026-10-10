@@ -96,7 +96,7 @@
 - **إشعار الزبون بتغيّر حالة طلبه**: يتبعت من داخل `admin_update_order_status` عن طريق `net.http_post` لـ OneSignal، والمفتاح محفوظ في Vault باسم `onesignal_rest_key`.
   - النص عربي حتى في خانة `en`، لأن OneSignal يختار النص حسب لغة جهاز الزبون، وفيه رقم الطلب.
   - ما يتبعتش لو الحالة ما تغيّرتش.
-- **إشعار الأدمن بالطلب الجديد**: التريقر `trg_notify_admins_new_order` على `orders` يبعت لكل الأجهزة في `admin_push_subscriptions`. لو الإرسال فشل، الطلب يتسجل عادي.
+- **إشعار الأدمن بالطلب الجديد**: التريقر `trg_notify_admins_new_order` على `orders` يبعت لكل الأجهزة في `admin_push_subscriptions` بس. لو الإرسال فشل، الطلب يتسجل عادي. التريقر القديم `trg_notify_new_order` كان يبعت لكل المشتركين حتى الزبائن، وتمسح. لا ترجّعه، ولا تستعمل `included_segments` في أي إشعار.
 - **أرقام التواصل لكل طلب**: الأعمدة `orders.contact_phone` و`contact_second_phone`.
   - الزبون المسجّل يقدر يغيّرهم في `checkout.html` من غير ما يتغيّر رقم حسابه.
   - `admin-orders.html` يعرضهم، ولو فاضيين (طلبات الضيوف) يعرض أرقام ملف الزبون.
