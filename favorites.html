@@ -48,6 +48,11 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+  // تنظيف أي قيمة قبل حقنها في HTML (حماية من XSS)
+  function esc(value) {
+    return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+  }
+
   const SUPABASE_URL = "https://ptahgriuztxqsegkueln.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -86,10 +91,10 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
           <button class="remove-btn" onclick="event.preventDefault(); removeFav('${p.id}')">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
-          <img src="${img}" alt="${p.name}">
+          <img src="${esc(img)}" alt="${esc(p.name)}">
           <div class="card-body">
-            <h3>${p.name}</h3>
-            <div class="price"><span class="en">${p.price}</span> د.ل / ${unitLabel}</div>
+            <h3>${esc(p.name)}</h3>
+            <div class="price"><span class="en">${esc(p.price)}</span> د.ل / ${unitLabel}</div>
           </div>
         </a>
       `;

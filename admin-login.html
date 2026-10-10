@@ -60,6 +60,11 @@ button:disabled { opacity: 0.6; }
   const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  // حسابات الزبائن إيميلها وهمي على شكل 09XXXXXXXX@crystalstore.ly، وما عندهاش صلاحية الإدارة
+  function isCustomerSession(session) {
+    return /^0\d{9}@crystalstore\.ly$/i.test(session?.user?.email || "");
+  }
+
   async function login() {
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
@@ -83,7 +88,15 @@ button:disabled { opacity: 0.6; }
       return;
     }
 
-window.location.href = "admin.html";
+    if (isCustomerSession(data.session)) {
+      await supabaseClient.auth.signOut();
+      msg.textContent = "هذا حساب زبون، ما عندهش صلاحية الإدارة";
+      btn.disabled = false;
+      btn.textContent = "دخول";
+      return;
+    }
+
+    window.location.href = "admin.html";
   }
 </script>
 

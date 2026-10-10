@@ -146,7 +146,7 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
       const subId = OneSignal.User.PushSubscription.id;
       if (!subId) return;
       const { data: { session } } = await supabaseClient.auth.getSession();
-      if (!session) return;
+      if (!session || isCustomerSession(session)) return;
       await supabaseClient.from("admin_push_subscriptions").upsert(
         { user_id: session.user.id, subscription_id: subId },
         { onConflict: "subscription_id" }
@@ -172,10 +172,19 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
     if (window._enableNotif) window._enableNotif();
   }
 
+  // حسابات الزبائن إيميلها وهمي على شكل 09XXXXXXXX@crystalstore.ly، وما عندهاش صلاحية الإدارة
+  function isCustomerSession(session) {
+    return /^0\d{9}@crystalstore\.ly$/i.test(session?.user?.email || "");
+  }
+
   async function checkAuth() {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) {
       window.location.href = "admin-login.html";
+      return;
+    }
+    if (isCustomerSession(session)) {
+      window.location.href = "index.html";
       return;
     }
     document.getElementById("checking").style.display = "none";

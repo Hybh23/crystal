@@ -20,9 +20,9 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
 
 .container { max-width: 460px; margin: 0 auto; padding: 18px; }
 .shop-photo {
-  width: 100%; height: 160px; border-radius: var(--r-lg); background: var(--n100);
-  display: flex; align-items: center; justify-content: center; color: var(--muted);
-  font-size: 0.8rem; margin-bottom: 18px; border: 1px dashed var(--border);
+  width: 100%; height: 220px; border-radius: var(--r-lg); background: var(--n100);
+  object-fit: cover; object-position: center 20%; display: block;
+  margin-bottom: 18px; border: 1px solid var(--border);
 }
 .link-card {
   display: flex; align-items: center; gap: 14px; background: var(--surface);
@@ -50,7 +50,7 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
 
 <div class="container">
 
-  <div class="shop-photo" id="shopPhoto">صورة واجهة المحل </div>
+  <img class="shop-photo" id="shopPhoto" src="shop-front.jpg" alt="واجهة محل كرستال">
 
   <a href="tel:0920900011" class="link-card">
     <div class="link-icon">

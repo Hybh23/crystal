@@ -176,6 +176,11 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+  // تنظيف أي قيمة قبل حقنها في HTML (حماية من XSS)
+  function esc(value) {
+    return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+  }
+
   const SUPABASE_URL = "https://ptahgriuztxqsegkueln.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -280,7 +285,7 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
       .order("created_at", { ascending: false });
 
     if (error) {
-      document.getElementById("productsGrid").innerHTML = `<div class="empty">صار خطأ: ${error.message}</div>`;
+      document.getElementById("productsGrid").innerHTML = `<div class="empty">صار خطأ: ${esc(error.message)}</div>`;
       return;
     }
 
@@ -292,7 +297,7 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
   function renderChips(categories) {
     const bar = document.getElementById("categoryBar");
     const chips = [{ key: "all", label: "الكل" }, { key: "trending", label: "ترند" }, ...categories.map(c => ({ key: c.id, label: c.name }))];
-    bar.innerHTML = chips.map(c => `<button class="chip ${c.key === currentFilter ? 'active' : ''}" onclick="setFilter('${c.key}', this)">${c.label}</button>`).join("")
+    bar.innerHTML = chips.map(c => `<button class="chip ${c.key === currentFilter ? 'active' : ''}" onclick="setFilter('${c.key}', this)">${esc(c.label)}</button>`).join("")
       + `<a href="contact.html" class="chip contact-chip">📍 تواصل معنا</a>`;
   }
 
@@ -327,24 +332,24 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
       const unitLabel = p.sale_unit === "dozen" ? "دستة" : "قطعة";
       const hasColors = (p.product_colors || []).filter(c => c.active).length > 0;
       const isFav = favs.includes(p.id);
-      const productData = JSON.stringify({ id: p.id, name: p.name, price: p.price, sale_unit: p.sale_unit, image: img, hasColors }).replace(/'/g, "&apos;");
+      const productData = JSON.stringify({ id: p.id, name: p.name, price: p.price, sale_unit: p.sale_unit, image: img, hasColors });
 
       return `
         <a href="product.html?id=${p.id}" class="card">
           <div class="card-img-wrap">
             ${p.is_trending ? `<span class="trend-tag">ترند</span>` : ""}
             ${p.low_stock ? `<span class="low-tag">آخر القطع</span>` : ""}
-            <img src="${img}" alt="${p.name}">
+            <img src="${esc(img)}" alt="${esc(p.name)}">
             <button class="fav-btn ${isFav ? 'active' : ''}" onclick="event.preventDefault(); toggleFav('${p.id}', this)">
               <svg viewBox="0 0 24 24" stroke-width="2"><path d="M20.8 4.6a5 5 0 00-7.1 0L12 6.3l-1.7-1.7a5 5 0 00-7.1 7.1l1.7 1.7L12 20.6l7.1-7.1 1.7-1.7a5 5 0 000-7.1z"/></svg>
             </button>
-            <button class="quick-add-btn" onclick='event.preventDefault(); quickAdd(${productData})'>
+            <button class="quick-add-btn" onclick='event.preventDefault(); quickAdd(${esc(productData)})'>
               <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
             </button>
           </div>
           <div class="card-body">
-            <h3>${p.name}</h3>
-            <div class="price"><span class="en">${p.price}</span> د.ل <span class="unit">/ ${unitLabel}</span></div>
+            <h3>${esc(p.name)}</h3>
+            <div class="price"><span class="en">${esc(p.price)}</span> د.ل <span class="unit">/ ${unitLabel}</span></div>
           </div>
         </a>
       `;

@@ -80,13 +80,24 @@ input {
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+  // تنظيف أي قيمة قبل حقنها في HTML (حماية من XSS)
+  function esc(value) {
+    return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+  }
+
   const SUPABASE_URL = "https://ptahgriuztxqsegkueln.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  // حسابات الزبائن إيميلها وهمي على شكل 09XXXXXXXX@crystalstore.ly، وما عندهاش صلاحية الإدارة
+  function isCustomerSession(session) {
+    return /^0\d{9}@crystalstore\.ly$/i.test(session?.user?.email || "");
+  }
+
   async function checkAuth() {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) { window.location.href = "admin-login.html"; return false; }
+    if (isCustomerSession(session)) { window.location.href = "index.html"; return false; }
     return true;
   }
 
@@ -97,17 +108,17 @@ input {
     const list = document.getElementById("citiesList");
     const { data: cities, error } = await supabaseClient.from("cities").select("*").order("name");
 
-    if (error) { list.innerHTML = `<div class="empty">خطأ: ${error.message}</div>`; return; }
+    if (error) { list.innerHTML = `<div class="empty">خطأ: ${esc(error.message)}</div>`; return; }
     if (!cities || cities.length === 0) { list.innerHTML = `<div class="empty">لا توجد مدن بعد</div>`; return; }
 
     list.innerHTML = cities.map(c => `
       <div class="city-row">
         <div>
-          <div class="city-name">${c.name}</div>
+          <div class="city-name">${esc(c.name)}</div>
           <span class="status ${c.active ? 'on' : 'off'}">${c.active ? 'مفعّلة' : 'معطّلة'}</span>
         </div>
         <div class="city-controls">
-          <input type="number" id="city-price-${c.id}" value="${c.shipping_price}">
+          <input type="number" id="city-price-${c.id}" value="${esc(c.shipping_price)}">
           <button class="save" onclick="saveCityPrice('${c.id}')">حفظ</button>
           <button onclick="toggleCity('${c.id}', ${c.active})">${c.active ? 'تعطيل' : 'تفعيل'}</button>
         </div>

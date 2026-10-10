@@ -62,6 +62,11 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+  // تنظيف أي قيمة قبل حقنها في HTML (حماية من XSS)
+  function esc(value) {
+    return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+  }
+
   const SUPABASE_URL = "https://ptahgriuztxqsegkueln.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_028EXJwq6WM1uN9z8kDKhw_GKltVWhw";
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -90,9 +95,9 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
 
     result.innerHTML = `
       <div class="result-box">
-        <div class="order-num">#${order.order_number}</div>
-        <div class="badge ${order.status}">${STATUS_LABEL[order.status] || order.status}</div>
-        <div class="total-row">الإجمالي: <b>${order.grand_total}</b> د.ل</div>
+        <div class="order-num">#${esc(order.order_number)}</div>
+        <div class="badge ${esc(order.status)}">${esc(STATUS_LABEL[order.status] || order.status)}</div>
+        <div class="total-row">الإجمالي: <b>${esc(order.grand_total)}</b> د.ل</div>
         <div class="total-row">${dateStr}</div>
       </div>
     `;
