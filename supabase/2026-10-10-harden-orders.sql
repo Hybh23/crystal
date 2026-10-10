@@ -2,25 +2,27 @@
 -- كرستال: تقوية دوال الطلبات وقواعد RLS
 -- يتشغّل من Supabase Dashboard ← SQL Editor
 --
--- قبل التشغيل:
---   1. نزّل نسخة احتياطية من admin-backup.html
---   2. شغّل "الفحص المسبق" تحت بروحه وتأكد من النتيجة
+-- قبل التشغيل: نزّل نسخة احتياطية من admin-backup.html
+-- انسخ الملف كامل وشغّله مرة وحدة. لو صار أي خطأ ما يتغيرش شي.
 -- =====================================================================
 
 
--- ---------------------------------------------------------------------
--- الفحص المسبق (شغّله بروحه أول)
--- المطلوب: func_owner = table_owner و forced = false
--- معناها إن دوال SECURITY DEFINER تتجاوز RLS، فنقدروا نسكّروا الإدخال
--- المباشر على orders و order_items من غير ما الطلبات توقف.
--- ---------------------------------------------------------------------
--- select
---   (select pg_get_userbyid(proowner) from pg_proc where proname = 'create_guest_order' limit 1) as func_owner,
---   (select pg_get_userbyid(relowner) from pg_class where oid = 'public.orders'::regclass)       as table_owner,
---   (select relforcerowsecurity     from pg_class where oid = 'public.orders'::regclass)       as forced;
-
-
 begin;
+
+-- ---------------------------------------------------------------------
+-- 0) فحص أمان تلقائي: لو الدوال ما تقدرش تتجاوز RLS، يوقف كل شي
+--    وما يتغيّرش ولا حاجة.
+-- ---------------------------------------------------------------------
+do $$
+declare
+  v_func_owner  text := (select pg_get_userbyid(proowner) from pg_proc where proname = 'create_guest_order' limit 1);
+  v_table_owner text := (select pg_get_userbyid(relowner) from pg_class where oid = 'public.orders'::regclass);
+  v_forced      bool := (select relforcerowsecurity from pg_class where oid = 'public.orders'::regclass);
+begin
+  if v_func_owner is distinct from v_table_owner or v_forced then
+    raise exception 'وقف: مالك الدوال (%) غير مالك الجداول (%) أو FORCE RLS مفعّل. ما تغيّر شي.', v_func_owner, v_table_owner;
+  end if;
+end $$;
 
 -- ---------------------------------------------------------------------
 -- 1) دالة داخلية: تتحقق من عناصر السلة وتجيب السعر والاسم والوحدة من
