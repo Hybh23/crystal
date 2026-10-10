@@ -267,7 +267,8 @@
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
     await OneSignal.init({ appId: "c8318950-edb6-4899-bc3b-19189079f1d0" });
-    pushSubscriptionId = OneSignal.User.PushSubscription.id || null;
+    const sub = OneSignal.User.PushSubscription;
+    pushSubscriptionId = sub.optedIn ? (sub.id || null) : null;
   });
     const CART_KEY = "crystal_cart";
     const MIN_ORDER = 300; // نفس القيمة في cart.html

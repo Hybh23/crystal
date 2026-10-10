@@ -23,7 +23,7 @@
 | `cart.html` | السلة وفرض الحد الأدنى للطلب |
 | `checkout.html` | إتمام الطلب لضيف أو زبون مسجّل، اختيار المدينة (سعر التوصيل)، وطريقة الدفع |
 | `order-confirmation.html?order=&total=&method=` | تأكيد الطلب، وزر واتساب لإرسال إيصال التحويل |
-| `order-status.html?order=` | تتبّع الطلب عبر RPC `get_order_status_public` |
+| `order-status.html?order=` | تتبّع الطلب عبر RPC `get_order_status_public`. يوصلله الزبون من زر "تتبع طلبي" في الرئيسية أو من طلباته في `account.html`. آخر رقم طلب ينحفظ في `localStorage` باسم `crystal_last_order` ويتعبى تلقائيًا |
 | `customer-login.html?redirect=` | دخول أو تسجيل برقم الهاتف |
 | `account.html` | حساب الزبون وطلباته السابقة |
 | `favorites.html` | المفضلة (IDs محفوظة في localStorage) |
@@ -65,9 +65,10 @@
 ### 3. الإشعارات عبر OneSignal
 - `appId: "c8318950-edb6-4899-bc3b-19189079f1d0"`، والـ SDK هو `OneSignalSDK.page.js` v16، والتهيئة عن طريق `window.OneSignalDeferred`.
 - **الزبون**:
-  - `index.html`: زر الجرس (`toggleBell`) يطلب الإذن أو يدير `optOut`.
+  - `index.html`: زر الجرس (`toggleBell`) يعتمد على `PushSubscription.optedIn` مش على إذن المتصفح، لأن الإذن يقعد مسموح حتى بعد `optOut`. التفعيل يطلب الإذن ثم يدير `optIn()`.
   - `checkout.html`: ياخذ `OneSignal.User.PushSubscription.id` ويبعثه كـ `p_push_subscription_id` لدالة إنشاء الطلب، عشان السيرفر يقدر يبعث تحديثات حالة الطلب لهذا الجهاز.
-- **الأدمن**: `admin.html` يحفظ الـ subscription id في جدول `admin_push_subscriptions` (upsert على `subscription_id`) عشان توصله إشعارات الطلبات الجديدة.
+- **الأدمن**: `admin.html` يحفظ الـ subscription id في جدول `admin_push_subscriptions` (upsert على `subscription_id`) عشان توصله إشعارات الطلبات الجديدة. الحفظ يصير مع حدث `PushSubscription` `change`، لأن رقم الاشتراك يوصل متأخر بعد الموافقة. وكلمة "مفعّلة" ما تظهرش إلا بعد ما الحفظ ينجح.
+- **نفس المتصفح للأدمن والزبون**: الموقع واحد، فاشتراك OneSignal واحد. لو الأدمن طفّى الجرس في `index.html`، تتوقف إشعاراته هو برضو.
 - **إرسال الإشعارات نفسه ما يصيرش من هذا الريبو**. يصير من جهة Supabase (trigger أو Edge Function أو webhook)، والكود هذا مش موجود هنا.
 
 ## البيانات وتدفق الطلب
@@ -77,7 +78,9 @@
 - **دوال RPC**: `create_guest_order`, `create_customer_order` (ترجّع `result_order_number` و`result_grand_total`)، و`admin_update_order_status`، و`get_order_status_public`.
 - **حالات الطلب**: الطلب يبدأ بـ `pending_verification` في حالة التحويل المصرفي (يتحول لـ `new` بعد "تأكيد الدفع" مع `payment_status = verified`)، أو بـ `new` في حالة الدفع عند الاستلام. بعدها يمشي `prepared` ثم `out_for_delivery` ثم `delivered`. الإلغاء `cancelled` متاح من أي حالة قبل التسليم.
 - **طرق الدفع**: `cod` و`bank_transfer`. بيانات الحساب المصرفي مكتوبة في `checkout.html`، والإيصال يتبعت على واتساب `218920900011`.
-- **حسابات الزبائن**: الدخول برقم الهاتف، والرقم يتحول لإيميل وهمي `09XXXXXXXX@crystalstore.ly` في Supabase Auth، وبعدها يتعمل صف في `customers`.
+- **حسابات الزبائن**: الدخول برقم الهاتف، والرقم يتحول لإيميل وهمي `09XXXXXXXX@crystalstore.ly` في Supabase Auth. الاسم يتبعت كـ `options.data.name` مع `signUp`.
+  - صف `customers` يعمله التريقر `on_auth_user_created_customer` على `auth.users`، وصفحة التسجيل تعمله بروحها كاحتياط لو ما لقتهوش.
+  - **"Confirm email" لازم يكون مقفول** في Supabase (Authentication ← Sign In / Providers ← Email)، لأن الإيميل وهمي وما يوصلش، والحساب ما يتفعّلش أبدًا.
 - **أرقام الهاتف الليبية**: نفس الـ regex في `checkout.html` و`customer-login.html`: `^(?:\+218|00218|0)9[1-4][0-9]{7}$` (091 إلى 094 بس، وما فيش رقم ليبي يبدا بـ 095). لو تغيّر، غيّره في الاثنين.
 
 ## قواعد أمان لازم تتبع

@@ -251,24 +251,32 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
     await OneSignal.init({ appId: "c8318950-edb6-4899-bc3b-19189079f1d0" });
     refreshBell(OneSignal);
     OneSignal.Notifications.addEventListener("permissionChange", () => refreshBell(OneSignal));
+    OneSignal.User.PushSubscription.addEventListener("change", () => refreshBell(OneSignal));
     window._oneSignal = OneSignal;
   });
 
+  // الجرس يعكس الاشتراك الفعلي (optedIn) مش إذن المتصفح بس:
+  // بعد optOut يقعد الإذن مسموح، فلو اعتمدنا على الإذن ما يرجعش الاشتراك أبدًا.
   function refreshBell(OneSignal) {
     const btn = document.getElementById("bellBtn");
-    if (OneSignal.Notifications.permission) btn.classList.add("active-bell");
+    if (OneSignal.User.PushSubscription.optedIn) btn.classList.add("active-bell");
     else btn.classList.remove("active-bell");
   }
 
   async function toggleBell() {
     const OneSignal = window._oneSignal;
     if (!OneSignal) return;
-    if (OneSignal.Notifications.permission) {
+    if (OneSignal.User.PushSubscription.optedIn) {
       await OneSignal.User.PushSubscription.optOut();
       showToast("تم إيقاف الإشعارات");
     } else {
-      await OneSignal.Notifications.requestPermission();
-      showToast("تم تفعيل الإشعارات ✓");
+      if (!OneSignal.Notifications.permission) await OneSignal.Notifications.requestPermission();
+      if (OneSignal.Notifications.permission) {
+        await OneSignal.User.PushSubscription.optIn();
+        showToast("تم تفعيل الإشعارات ✓");
+      } else {
+        showToast("الإشعارات مقفولة من إعدادات المتصفح");
+      }
     }
     refreshBell(OneSignal);
   }
@@ -298,6 +306,7 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
     const bar = document.getElementById("categoryBar");
     const chips = [{ key: "all", label: "الكل" }, { key: "trending", label: "ترند" }, ...categories.map(c => ({ key: c.id, label: c.name }))];
     bar.innerHTML = chips.map(c => `<button class="chip ${c.key === currentFilter ? 'active' : ''}" onclick="setFilter('${c.key}', this)">${esc(c.label)}</button>`).join("")
+      + `<a href="order-status.html" class="chip contact-chip">📦 تتبع طلبي</a>`
       + `<a href="contact.html" class="chip contact-chip">📍 تواصل معنا</a>`;
   }
 

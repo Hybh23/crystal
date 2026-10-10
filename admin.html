@@ -129,41 +129,47 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
   OneSignalDeferred.push(async function(OneSignal) {
     await OneSignal.init({ appId: "c8318950-edb6-4899-bc3b-19189079f1d0" });
 
-    const refreshStatus = () => {
-      const status = document.getElementById("notifStatus");
-      const btn = document.getElementById("notifBtn");
-      if (OneSignal.Notifications.permission) {
-        status.textContent = "التنبيهات مفعّلة ✓";
-        status.className = "notif-status on";
-        btn.style.display = "none";
-      } else {
+    const status = document.getElementById("notifStatus");
+    const btn = document.getElementById("notifBtn");
+
+    // "مفعّلة" معناها: المتصفح سامح + الجهاز مشترك فعلًا (optedIn) + الرقم محفوظ في القاعدة
+    const saveSubscriptionId = async () => {
+      const sub = OneSignal.User.PushSubscription;
+      if (!OneSignal.Notifications.permission || !sub.optedIn || !sub.id) {
         status.textContent = "";
         btn.style.display = "inline-block";
+        return;
       }
-    };
-
-    const saveSubscriptionId = async () => {
-      const subId = OneSignal.User.PushSubscription.id;
-      if (!subId) return;
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (!session || isCustomerSession(session)) return;
-      await supabaseClient.from("admin_push_subscriptions").upsert(
-        { user_id: session.user.id, subscription_id: subId },
+      const { error } = await supabaseClient.from("admin_push_subscriptions").upsert(
+        { user_id: session.user.id, subscription_id: sub.id },
         { onConflict: "subscription_id" }
       );
+      if (error) {
+        status.textContent = "تعذر حفظ الجهاز للتنبيهات: " + error.message;
+        status.className = "notif-status";
+        btn.style.display = "inline-block";
+        return;
+      }
+      status.textContent = "التنبيهات مفعّلة على هذا الجهاز ✓";
+      status.className = "notif-status on";
+      btn.style.display = "none";
     };
 
-    OneSignal.Notifications.addEventListener("permissionChange", () => {
-      refreshStatus();
-      saveSubscriptionId();
-    });
-
-    refreshStatus();
-    if (OneSignal.Notifications.permission) saveSubscriptionId();
+    OneSignal.Notifications.addEventListener("permissionChange", saveSubscriptionId);
+    // رقم الاشتراك يوصل متأخر شوية بعد الموافقة، فنستنوا الحدث هذا عشان نحفظوه
+    OneSignal.User.PushSubscription.addEventListener("change", saveSubscriptionId);
+    saveSubscriptionId();
 
     window._enableNotif = async () => {
-      await OneSignal.Notifications.requestPermission();
-      refreshStatus();
+      if (!OneSignal.Notifications.permission) await OneSignal.Notifications.requestPermission();
+      if (!OneSignal.Notifications.permission) {
+        status.textContent = "التنبيهات مقفولة من إعدادات المتصفح. فعّلها من إعدادات الموقع.";
+        status.className = "notif-status";
+        return;
+      }
+      await OneSignal.User.PushSubscription.optIn();
       saveSubscriptionId();
     };
   });

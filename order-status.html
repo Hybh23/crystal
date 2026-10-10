@@ -105,7 +105,12 @@ body { font-family: 'Tajawal', Tahoma, sans-serif; background: var(--bg); color:
 
   window.onload = function() {
     const params = new URLSearchParams(window.location.search);
-    const orderParam = params.get("order");
+    let orderParam = params.get("order");
+    if (orderParam) {
+      try { localStorage.setItem("crystal_last_order", orderParam); } catch {}
+    } else {
+      try { orderParam = localStorage.getItem("crystal_last_order"); } catch {}
+    }
     if (orderParam) {
       document.getElementById("orderInput").value = orderParam;
       search();
