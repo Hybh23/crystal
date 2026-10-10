@@ -32,7 +32,7 @@
 ### صفحات الإدارة
 | الملف | الوظيفة |
 |---|---|
-| `admin-login.html` | دخول الأدمن بالإيميل وكلمة السر (Supabase Auth) |
+| `admin-login.html` | دخول الأدمن (Supabase Auth). يقبل اسم مستخدم من غير `@` ويحوله لـ `اسم@crystalstore.ly`، مثلًا `admin` يصير `admin@crystalstore.ly` |
 | `admin.html` | لوحة التحكم، تفعيل إشعارات الطلبات الجديدة، ونقطة بداية الـ PWA (`manifest.json`) |
 | `admin-orders.html` | إدارة الطلبات وتغيير الحالة عبر RPC `admin_update_order_status` |
 | `admin-products.html` | تعديل السعر، التوفر، علامة "آخر القطع"، والحذف (المنتج المرتبط بطلبات ما ينحذفش، يتوقف توفره بس) |
